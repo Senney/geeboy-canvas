@@ -1,6 +1,9 @@
 import { Canvas } from './gfx/Canvas';
 import { Cartridge } from './rom/Cartridge';
 import { RomLoader } from './rom/RomLoader';
+import { CPU } from './sys/CPU';
+import { RAMFactory } from './mem/RAMFactory';
+import { dumpRegistersToTable, dumpSurroundingProgram } from './web';
 
 const main = async () => {
   const canvasElement = document.getElementById('canvas');
@@ -22,6 +25,25 @@ const main = async () => {
   canvas.context.fillText(cart.metadata.title, 50, 50);
 
   cart.metadata.log();
+
+  const ram = RAMFactory.getImplementation(cart);
+  const cpu = new CPU(cart, ram);
+
+  dumpRegistersToTable(cpu.registers);
+  dumpSurroundingProgram(cpu.registers, cart);
+  document.getElementById('step').onclick = () => {
+    cpu.step();
+    dumpRegistersToTable(cpu.registers);
+    dumpSurroundingProgram(cpu.registers, cart);
+  };
+  document.getElementById('run-to-unimplemented').onclick = () => {
+    while (cpu.hasUnimplemented === false) {
+      cpu.step();
+    }
+
+    dumpRegistersToTable(cpu.registers);
+    dumpSurroundingProgram(cpu.registers, cart);
+  });
 };
 
 document.addEventListener('DOMContentLoaded', () => {

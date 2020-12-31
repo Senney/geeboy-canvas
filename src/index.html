@@ -6,6 +6,56 @@
     <h1>Canvas Geeboy</h1>
     <input type="file" id="rom" name="rom-upload" />
     <br />
-    <canvas id="canvas"></canvas>
+
+    <div>
+      <canvas id="canvas"></canvas>
+    </div>
+
+    <button id="step">></button>
+    <button id="run-to-unimplemented">>></button>
+    <div>
+      <span id="current-pc" style="font-weight: bold"></span>
+      <span id="pc-bytes"></span>
+    </div>
+    <div>
+      <table>
+        <tr>
+          <th>Register</th>
+          <th>Value</th>
+        </tr>
+        <tr>
+          <td>A</td>
+          <td id="a-reg">0x00</td>
+        </tr>
+        <tr>
+          <td>F</td>
+          <td id="f-reg">0x00</td>
+        </tr>
+        <tr>
+          <td>B</td>
+          <td id="b-reg">0x00</td>
+        </tr>
+        <tr>
+          <td>C</td>
+          <td id="c-reg">0x00</td>
+        </tr>
+        <tr>
+          <td>D</td>
+          <td id="d-reg">0x00</td>
+        </tr>
+        <tr>
+          <td>E</td>
+          <td id="e-reg">0x00</td>
+        </tr>
+        <tr>
+          <td>H</td>
+          <td id="h-reg">0x00</td>
+        </tr>
+        <tr>
+          <td>L</td>
+          <td id="l-reg">0x00</td>
+        </tr>
+      </table>
+    </div>
   </body>
 </html>
