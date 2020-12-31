@@ -1,5 +1,5 @@
 import { InstructionFunction, InstructionMap } from './types';
-import { RegisterNames } from '../RegisterSet';
+import { RegisterNames, RegisterSet } from '../RegisterSet';
 import { getImmediate16 } from './util';
 
 const registerToRegisterLd = (
@@ -19,7 +19,7 @@ const memoryAtHLToRegister = (dst: RegisterNames): InstructionFunction => {
 
 const makeRegisterCopySet = (baseInstr: number, reg: RegisterNames) => {
   return {
-    [baseInstr]: registerToRegisterLd(reg, 'B'),
+    [baseInstr++]: registerToRegisterLd(reg, 'B'),
     [baseInstr++]: registerToRegisterLd(reg, 'C'),
     [baseInstr++]: registerToRegisterLd(reg, 'D'),
     [baseInstr++]: registerToRegisterLd(reg, 'E'),
@@ -47,10 +47,20 @@ const loadImmediateMemoryWithRegister = (
   };
 };
 
+const loadAFromAddressCallback = (
+  cb: (registers: RegisterSet) => number
+): InstructionFunction => {
+  return (registers, memory) => {
+    registers.A = memory.read(cb(registers));
+  };
+};
+
 const instructionMap: InstructionMap = {
   0x6: loadRegisterImmediate8('B'),
+  0xa: loadAFromAddressCallback((r) => r.BC),
   0xe: loadRegisterImmediate8('C'),
   0x16: loadRegisterImmediate8('D'),
+  0x1a: loadAFromAddressCallback((r) => r.DE),
   0x1e: loadRegisterImmediate8('E'),
   0x26: loadRegisterImmediate8('H'),
   0x2e: loadRegisterImmediate8('L'),
