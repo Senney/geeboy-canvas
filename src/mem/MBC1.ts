@@ -10,15 +10,17 @@ export class MBC1 extends RAMBase {
   private bankMode: BankMode;
   private hasRam: boolean;
   private ramEnabled: boolean;
-  private bank: number;
+  private romBank: number;
+  private ramBank: number;
 
-  constructor(private rom: Cartridge) {
+  constructor(rom: Cartridge) {
     super(rom);
 
     this.bankMode = BankMode.ROM;
     this.hasRam = rom.metadata.ramType !== 0;
     this.ramEnabled = true;
-    this.bank = 1;
+    this.romBank = 1;
+    this.ramBank = 1;
   }
 
   public read(addr: number): number {
@@ -29,7 +31,7 @@ export class MBC1 extends RAMBase {
 
     // 0x4000 to 0x7FFF read from the currently referenced bank.
     if (0x4000 <= addr && addr <= 0x7fff) {
-      return this.readRomData(addr, this.bank);
+      return this.readRomData(addr, this.romBank);
     }
 
     // 0xA000 to 0xBFFF indicate a write to the memory onboard the cart.
@@ -51,7 +53,8 @@ export class MBC1 extends RAMBase {
     }
 
     if (0x2000 <= addr && addr <= 0x3fff) {
-      throw Error('Switching rom banks is not supported');
+      this.selectRomBank(value & 0x1f);
+      return;
     }
 
     if (0x6000 <= addr && addr <= 0x7fff) {
@@ -73,5 +76,14 @@ export class MBC1 extends RAMBase {
     }
 
     return this.rom.readByte(bankAddr);
+  }
+
+  private selectRomBank(bank: number) {
+    if ([0x0, 0x20, 0x40, 0x60].includes(bank)) {
+      bank += 1;
+    }
+
+    console.log('Setting selected rom bank to', bank);
+    this.romBank = bank;
   }
 }
