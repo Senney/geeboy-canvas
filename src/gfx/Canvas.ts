@@ -15,7 +15,11 @@ export class Canvas {
     ];
   }
 
-  public swap() {
+  public get context(): CanvasRenderingContext2D {
+    return this.ctx;
+  }
+
+  public swap(): void {
     this.currentBuffer = (this.currentBuffer + 1) % this.buffers.length;
     this.ctx.putImageData(this.buffers[this.currentBuffer], 0, 0);
   }
