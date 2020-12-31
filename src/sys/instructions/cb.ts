@@ -1,4 +1,4 @@
-import { RegisterNames, RegisterSet } from '../RegisterSet';
+import { RegisterNames } from '../RegisterSet';
 import { InstructionFunction, InstructionMap } from './types';
 
 const shiftRegisterRight = (register: RegisterNames): InstructionFunction => {
@@ -27,7 +27,42 @@ const shiftHLRight: InstructionFunction = (registers, memory) => {
   });
 };
 
+const swapRegisterBits = (register: RegisterNames): InstructionFunction => {
+  return (registers) => {
+    const v = registers.getRegister(register);
+    const swapped = ((v & 0b00001111) << 4) | ((v & 0b11110000) << 4);
+    registers.setRegister(register, swapped);
+    registers.setFlags({
+      zero: swapped === 0 ? 1 : 0,
+      carry: 0,
+      halfCarry: 0,
+      subtract: 0,
+    });
+  };
+};
+
+const swapHLBits: InstructionFunction = (registers, memory) => {
+  const addr = registers.HL;
+  const v = memory.read(addr);
+  const swapped = ((v & 0b00001111) << 4) | ((v & 0b11110000) << 4);
+  memory.write(addr, swapped);
+  registers.setFlags({
+    zero: swapped === 0 ? 1 : 0,
+    carry: 0,
+    halfCarry: 0,
+    subtract: 0,
+  });
+};
+
 const instructionMap: InstructionMap = {
+  0xcb30: swapRegisterBits('B'),
+  0xcb31: swapRegisterBits('C'),
+  0xcb32: swapRegisterBits('D'),
+  0xcb33: swapRegisterBits('E'),
+  0xcb34: swapRegisterBits('H'),
+  0xcb35: swapRegisterBits('L'),
+  0xcb36: swapHLBits,
+  0xcb37: swapRegisterBits('A'),
   0xcb38: shiftRegisterRight('B'),
   0xcb39: shiftRegisterRight('C'),
   0xcb3a: shiftRegisterRight('D'),
