@@ -68,6 +68,10 @@ export class RegisterSet {
     };
   }
 
+  getFlag(flag: keyof Flags): number {
+    return this.flags[flag];
+  }
+
   setFlags(flags: Partial<Flags>): Flags {
     this.flagValues[0] = flags.zero ?? this.flagValues[0];
     this.flagValues[1] = flags.subtract ?? this.flagValues[1];

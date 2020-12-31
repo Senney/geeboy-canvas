@@ -8,6 +8,7 @@ import { RAM } from '../mem/RAM';
 export class CPU {
   private r: RegisterSet;
   private halt: boolean;
+  private interruptsEnabled: boolean;
 
   public hasUnimplemented = false;
 
@@ -22,8 +23,8 @@ export class CPU {
     }
 
     let instr = this.rom.readByte(this.r.PC);
-    if (instr === 0xCB) {
-      instr = instr << 8 | this.rom.readByte(this.r.PC + 1);
+    if (instr === 0xcb) {
+      instr = (instr << 8) | this.rom.readByte(this.r.PC + 1);
     }
 
     const meta = InstructionMetadata.get(instr);
@@ -47,9 +48,19 @@ export class CPU {
     }
 
     console.log(`Running ${meta.name}`);
-    const cycles = func(this.r, this.mem) ?? meta.cycles[0];
+    const cycles = func(this.r, this.mem, this, meta) ?? meta.cycles[0];
 
     this.r.PC += meta.size;
+  }
+
+  public enableInterrupts(): boolean {
+    this.interruptsEnabled = true;
+    return true;
+  }
+
+  public disableInterrupts(): boolean {
+    this.interruptsEnabled = false;
+    return false;
   }
 
   public get registers(): RegisterSet {

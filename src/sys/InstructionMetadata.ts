@@ -10,7 +10,7 @@ type OpcodeEntry = {
   cycles: number[];
 };
 
-type InstructionMetadataRecord = {
+export type InstructionMetadataRecord = {
   opcode: number;
   name: string;
   size: number;
@@ -43,12 +43,16 @@ export class InstructionMetadata {
     return {
       opcode: opcode,
       cycles: v.cycles,
-      name: v.mnemonic,
+      name: this.toAssemblyStr(v),
       size: v.bytes,
     };
   }
 
   private static toOpcodeStr(opcode: number): string {
     return `0x${(opcode & 0xff).toString(16).substr(0, 2)}`;
+  }
+
+  private static toAssemblyStr(v: OpcodeEntry): string {
+    return [v.mnemonic, v.operand1, v.operand2].filter((v) => v).join(' ');
   }
 }

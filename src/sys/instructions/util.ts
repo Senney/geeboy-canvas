@@ -1,5 +1,6 @@
 import { RAM } from '../../mem/RAM';
 import { RegisterNames, RegisterSet } from '../RegisterSet';
+import { InstructionMap } from './types';
 
 export const combineRegisters = (
   register: RegisterSet,
@@ -33,4 +34,20 @@ export const signed = (value: number): number => {
 
 export const unsigned = (value: number): number => {
   return Uint8Array.from([value])[0];
+};
+
+export const mergeInstructionSets = (
+  sets: InstructionMap[]
+): InstructionMap => {
+  return sets.reduce((instructionSet, currentSet) => {
+    const keys = Object.keys(currentSet);
+    const duplicates = keys.filter((k) => instructionSet[k] !== undefined);
+    if (duplicates.length > 0) {
+      throw new Error(
+        `Duplicate instruction definitions detected: ${duplicates}`
+      );
+    }
+
+    return Object.assign(instructionSet, currentSet);
+  }, {} as InstructionMap);
 };
