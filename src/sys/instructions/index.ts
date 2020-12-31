@@ -3,6 +3,7 @@ import loadInstructions from './ld';
 import jumpInstructions from './jump';
 import mathInstructions from './math';
 import cbInstructions from './cb';
+import bitwiseInstructions from './bitwise';
 
 export const instructionSet = {
   ...specialInstructions,
@@ -10,4 +11,5 @@ export const instructionSet = {
   ...jumpInstructions,
   ...mathInstructions,
   ...cbInstructions,
+  ...bitwiseInstructions,
 };
