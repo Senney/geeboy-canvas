@@ -43,7 +43,7 @@ const main = async () => {
 
     dumpRegistersToTable(cpu.registers);
     dumpSurroundingProgram(cpu.registers, cart);
-  });
+  };
 };
 
 document.addEventListener('DOMContentLoaded', () => {
