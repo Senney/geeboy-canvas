@@ -84,23 +84,87 @@ const loadOffsetFromCToA: InstructionFunction = (registers, memory) => {
   registers.A = memory.read(0xff00 + registers.C);
 };
 
+const loadRegisterPairFromImmediate16 = (
+  r1: RegisterNames,
+  r2: RegisterNames
+): InstructionFunction => {
+  return (registers, memory) => {
+    const val = getImmediate16(registers, memory);
+    registers.setRegister(r1, (val & 0xff00) >> 8);
+    registers.setRegister(r2, val & 0xff);
+  };
+};
+
+const loadHLAndIncrement: InstructionFunction = (registers, memory) => {
+  memory.write(registers.HL, registers.A);
+  registers.HL++;
+};
+
+const loadHLAndDecrement: InstructionFunction = (registers, memory) => {
+  memory.write(registers.HL, registers.A);
+  registers.HL--;
+};
+
+const loadAAndIncrementHL: InstructionFunction = (register, memory) => {
+  register.A = memory.read(register.HL);
+  register.HL++;
+};
+
+const loadAAndDecrementHL: InstructionFunction = (register, memory) => {
+  register.A = memory.read(register.HL);
+  register.HL--;
+};
+
+const loadAToMemoryAtRegisterPair = (
+  r1: RegisterNames,
+  r2: RegisterNames
+): InstructionFunction => {
+  return (registers, memory) => {
+    const addr = (registers.getRegister(r1) << 8) | registers.getRegister(r2);
+    memory.write(addr, registers.A);
+  };
+};
+
+const loadRegisterInToMemoryAtHL = (r: RegisterNames): InstructionFunction => (
+  registers,
+  memory
+) => {
+  memory.write(registers.HL, registers.getRegister(r));
+};
+
 const instructionMap: InstructionMap = {
+  0x1: loadRegisterPairFromImmediate16('B', 'C'),
+  0x2: loadAToMemoryAtRegisterPair('B', 'C'),
   0x6: loadRegisterImmediate8('B'),
   0x8: writeSPToMemory,
   0xa: loadAFromAddressCallback((r) => r.BC),
   0xe: loadRegisterImmediate8('C'),
+  0x11: loadRegisterPairFromImmediate16('D', 'E'),
+  0x12: loadAToMemoryAtRegisterPair('D', 'E'),
   0x16: loadRegisterImmediate8('D'),
   0x1a: loadAFromAddressCallback((r) => r.DE),
   0x1e: loadRegisterImmediate8('E'),
+  0x21: loadRegisterPairFromImmediate16('H', 'L'),
+  0x22: loadHLAndIncrement,
   0x26: loadRegisterImmediate8('H'),
+  0x2a: loadAAndIncrementHL,
   0x2e: loadRegisterImmediate8('L'),
   0x31: loadSPImmediate16,
+  0x32: loadHLAndDecrement,
+  0x3a: loadAAndDecrementHL,
   0x3e: loadRegisterImmediate8('A'),
   0xe0: loadAToOffsetImmediate8,
   0xe2: loadAToOffsetC,
   0xea: loadImmediateMemoryWithRegister('A'),
   0xf0: loadOffsetImmediate8ToA,
   0xf2: loadOffsetFromCToA,
+  0x70: loadRegisterInToMemoryAtHL('B'),
+  0x71: loadRegisterInToMemoryAtHL('C'),
+  0x72: loadRegisterInToMemoryAtHL('D'),
+  0x73: loadRegisterInToMemoryAtHL('E'),
+  0x74: loadRegisterInToMemoryAtHL('H'),
+  0x75: loadRegisterInToMemoryAtHL('L'),
+  0x77: loadRegisterInToMemoryAtHL('A'),
   ...makeRegisterCopySet(0x40, 'B'),
   ...makeRegisterCopySet(0x48, 'C'),
   ...makeRegisterCopySet(0x50, 'D'),

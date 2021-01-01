@@ -182,14 +182,29 @@ export class RegisterSet {
     return value;
   }
 
+  set BC(value: number) {
+    this.setRegisterInternal(registerNameIndex.B, (value & 0xff00) >> 8);
+    this.setRegisterInternal(registerNameIndex.C, value & 0xff);
+  }
+
   get DE(): number {
     const value = combineRegisters(this, 'D', 'E');
     return value;
   }
 
+  set DE(value: number) {
+    this.setRegisterInternal(registerNameIndex.D, (value & 0xff00) >> 8);
+    this.setRegisterInternal(registerNameIndex.E, value & 0xff);
+  }
+
   get HL(): number {
     const value = combineRegisters(this, 'H', 'L');
     return value;
+  }
+
+  set HL(value: number) {
+    this.setRegisterInternal(registerNameIndex.H, (value & 0xff00) >> 8);
+    this.setRegisterInternal(registerNameIndex.L, value & 0xff);
   }
 
   private setRegisterInternal(idx: number, value: number): void {

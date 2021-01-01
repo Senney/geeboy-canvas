@@ -169,6 +169,4 @@ const instructionMap: InstructionMap = {
   0xf6: fnImmediate8(orer),
 };
 
-console.log(Object.keys(instructionMap).map((s) => parseInt(s).toString(16)));
-
 export default instructionMap;

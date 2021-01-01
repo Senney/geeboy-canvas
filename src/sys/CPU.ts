@@ -11,6 +11,7 @@ export class CPU {
   private interruptsEnabled: boolean;
 
   public hasUnimplemented = false;
+  public instrHistory = [];
 
   constructor(private rom: Cartridge, private mem: RAM) {
     this.r = new RegisterSet();
@@ -51,6 +52,7 @@ export class CPU {
     const cycles = func(this.r, this.mem, this, meta) ?? meta.cycles[0];
 
     this.r.PC += meta.size;
+    this.instrHistory.push(meta.name);
   }
 
   public enableInterrupts(): boolean {
