@@ -9,7 +9,7 @@ const ret: InstructionFunction = (registers, memory) => {
 
 const call: InstructionFunction = (registers, memory, _, meta) => {
   const nextInstr = registers.PC + meta.size;
-  const addr = getImmediate16(registers, memory);
+  const addr = getImmediate16(registers, memory) - meta.size;
   push16(registers, memory, nextInstr);
   registers.PC = addr;
 };
