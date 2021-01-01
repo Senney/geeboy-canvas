@@ -1,4 +1,3 @@
-import { RAM } from '../../mem/RAM';
 import { RegisterNames, RegisterSet } from '../RegisterSet';
 import { InstructionFunction, InstructionMap } from './types';
 import { getImmediate8 } from './util';
