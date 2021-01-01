@@ -27,7 +27,6 @@ export class CPU {
     const instr = this.getCurrentInstruction();
 
     const meta = InstructionMetadata.get(instr);
-    console.log(`0x${instr.toString(16)}`);
     if (instr === 0x76) {
       this.halt = true;
       return;

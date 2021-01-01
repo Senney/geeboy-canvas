@@ -33,7 +33,21 @@ const incrementRegister = (register: RegisterNames): InstructionFunction => {
   return (registers) => {
     const v = registers.getRegister(register);
     const hc = (((v & 0xf) + 1) & 0xf0) > 0;
-    const res = (v + 1) & 0xFF;
+    const res = (v + 1) & 0xff;
+    registers.setRegister(register, res);
+    registers.setFlags({
+      zero: res === 0 ? 1 : 0,
+      subtract: 0,
+      halfCarry: hc ? 1 : 0,
+    });
+  };
+};
+
+const decrementRegister = (register: RegisterNames): InstructionFunction => {
+  return (registers) => {
+    const v = registers.getRegister(register);
+    const hc = (((v & 0xf) - 1) & 0xf0) > 0;
+    const res = (v - 1) & 0xff;
     registers.setRegister(register, res);
     registers.setFlags({
       zero: res === 0 ? 1 : 0,
@@ -45,12 +59,19 @@ const incrementRegister = (register: RegisterNames): InstructionFunction => {
 
 const instructionMap: InstructionMap = {
   0x04: incrementRegister('B'),
+  0x05: decrementRegister('B'),
   0x0c: incrementRegister('C'),
+  0x0d: decrementRegister('C'),
   0x14: incrementRegister('D'),
+  0x15: decrementRegister('D'),
   0x1c: incrementRegister('E'),
+  0x1d: decrementRegister('E'),
   0x24: incrementRegister('H'),
+  0x25: decrementRegister('H'),
   0x2c: incrementRegister('L'),
+  0x2d: decrementRegister('L'),
   0x3c: incrementRegister('A'),
+  0x3d: decrementRegister('A'),
   0xd6: subtractRegisterImmediate8('A'),
 };
 

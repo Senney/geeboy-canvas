@@ -51,7 +51,11 @@ const main = async () => {
   };
   document.getElementById('run-to-unimplemented').onclick = () => {
     while (cpu.hasUnimplemented === false) {
-      cpu.step();
+      try {
+        cpu.step();
+      } catch (e) {
+        break;
+      }
     }
 
     dumpInstructionHistory(cpu);
