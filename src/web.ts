@@ -1,8 +1,13 @@
+import { RAM } from './mem/RAM';
 import { Cartridge } from './rom/Cartridge';
 import { CPU } from './sys/CPU';
 import { RegisterSet } from './sys/RegisterSet';
 
-const toHex = (value: number): string => {
+export const toHex = (value: number): string => {
+  if (value === undefined) {
+    return '0x???';
+  }
+
   return `0x${value.toString(16).toUpperCase()}`;
 };
 
@@ -31,16 +36,14 @@ export const dumpRegistersToTable = (registers: RegisterSet): void => {
 
 export const dumpSurroundingProgram = (
   registers: RegisterSet,
-  cart: Cartridge
+  mem: RAM
 ): void => {
   document.getElementById('current-pc').textContent = toHex(registers.PC);
 
   const values = [];
   for (let i = registers.PC - 4; i <= registers.PC + 4; i++) {
     values.push(
-      i === registers.PC
-        ? `*${toHex(cart.readByte(i))}*`
-        : toHex(cart.readByte(i))
+      i === registers.PC ? `*${toHex(mem.read(i))}*` : toHex(mem.read(i))
     );
   }
   document.getElementById('pc-bytes').textContent = values.join(' ');

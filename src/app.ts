@@ -34,12 +34,12 @@ const main = async () => {
   const cpu = new CPU(cart, ram);
 
   dumpRegistersToTable(cpu.registers);
-  dumpSurroundingProgram(cpu.registers, cart);
+  dumpSurroundingProgram(cpu.registers, ram);
   document.getElementById('step').onclick = () => {
     cpu.step();
     dumpInstructionHistory(cpu);
     dumpRegistersToTable(cpu.registers);
-    dumpSurroundingProgram(cpu.registers, cart);
+    dumpSurroundingProgram(cpu.registers, ram);
   };
   document.getElementById('step-10').onclick = () => {
     for (let i = 0; i < 10; i++) {
@@ -47,12 +47,14 @@ const main = async () => {
     }
     dumpInstructionHistory(cpu);
     dumpRegistersToTable(cpu.registers);
-    dumpSurroundingProgram(cpu.registers, cart);
+    dumpSurroundingProgram(cpu.registers, ram);
   };
   document.getElementById('run-to-unimplemented').onclick = () => {
-    while (cpu.hasUnimplemented === false) {
+    let i = 0;
+    while (cpu.hasUnimplemented === false && i < 1000) {
       try {
         cpu.step();
+        i++;
       } catch (e) {
         break;
       }
@@ -60,7 +62,23 @@ const main = async () => {
 
     dumpInstructionHistory(cpu);
     dumpRegistersToTable(cpu.registers);
-    dumpSurroundingProgram(cpu.registers, cart);
+    dumpSurroundingProgram(cpu.registers, ram);
+  };
+  document.getElementById('run-to-pc').onclick = () => {
+    const pcValue = (document.getElementById('pc') as HTMLInputElement).value;
+    let i = 0;
+    while (cpu.registers.PC !== parseInt(pcValue) && i < 50000) {
+      try {
+        cpu.step();
+        i++;
+      } catch (e) {
+        break;
+      }
+    }
+
+    dumpInstructionHistory(cpu);
+    dumpRegistersToTable(cpu.registers);
+    dumpSurroundingProgram(cpu.registers, ram);
   };
 };
 

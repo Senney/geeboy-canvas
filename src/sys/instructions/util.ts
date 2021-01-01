@@ -10,11 +10,18 @@ export const combineRegisters = (
   const v1 = register.getRegister(r1);
   const v2 = register.getRegister(r2);
 
-  return ((v1 << 8) | v2) & 0xff;
+  return ((v1 << 8) | v2) & 0xffff;
 };
 
 export const getImmediate8 = (registers: RegisterSet, memory: RAM): number => {
   return memory.read(registers.PC + 1);
+};
+
+export const getImmediate8Signed = (
+  registers: RegisterSet,
+  memory: RAM
+): number => {
+  return signed(getImmediate8(registers, memory));
 };
 
 export const getImmediate16 = (registers: RegisterSet, memory: RAM): number => {
