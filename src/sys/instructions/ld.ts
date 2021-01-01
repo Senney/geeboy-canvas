@@ -68,11 +68,11 @@ const writeSPToMemory: InstructionFunction = (registers, memory) => {
 
 const loadAToOffsetImmediate8: InstructionFunction = (registers, memory) => {
   const addr = getImmediate8(registers, memory);
-  memory.write(0xff00 + addr, registers.A);
+  memory.write(0xff00 | addr, registers.A);
 };
 
 const loadAToOffsetC: InstructionFunction = (registers, memory) => {
-  memory.write(0xff00 + registers.C, registers.A);
+  memory.write(0xff00 | registers.C, registers.A);
 };
 
 const loadOffsetImmediate8ToA: InstructionFunction = (registers, memory) => {
@@ -107,12 +107,12 @@ const loadHLAndDecrement: InstructionFunction = (registers, memory) => {
 
 const loadAAndIncrementHL: InstructionFunction = (register, memory) => {
   register.A = memory.read(register.HL);
-  register.HL++;
+  register.HL = register.HL + 1;
 };
 
 const loadAAndDecrementHL: InstructionFunction = (register, memory) => {
   register.A = memory.read(register.HL);
-  register.HL--;
+  register.HL = register.HL - 1;
 };
 
 const loadAToMemoryAtRegisterPair = (

@@ -10,11 +10,11 @@ export class Cartridge {
   }
 
   public read(idx: number, len: number): Uint8Array {
-    if (idx + len > this.content.byteLength) {
+    if (idx + len - 1 > this.content.byteLength) {
       throw new Error(
-        `Out of bounds read. [0x${idx.toString(16)}:0x${
-          idx + len.toString(16)
-        }]`
+        `Out of bounds read. [0x${idx.toString(16)}:0x${(idx + len).toString(
+          16
+        )}] - Max is [0x${this.content.byteLength.toString(16)}]`
       );
     }
 

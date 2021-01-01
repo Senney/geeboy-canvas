@@ -70,9 +70,14 @@ export class MBC1 extends RAMBase {
 
   private readRomData(addr: number, bank = 0) {
     const region = 0x4000 * bank;
-    const bankAddr = region + addr;
+    let bankAddr;
+    if (bank === 0) {
+      bankAddr = region + addr;
+    } else {
+      bankAddr = region + (addr - 0x4000);
+    }
     if (bankAddr > this.rom.metadata.romSize) {
-      throw new Error('Attempted to access RAM out of bounds.');
+      throw new Error('Attempted to access ROM out of bounds.');
     }
 
     return this.rom.readByte(bankAddr);

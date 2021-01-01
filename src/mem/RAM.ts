@@ -9,7 +9,11 @@ export class RAMBase implements RAM {
   protected memory: Uint8Array;
 
   constructor(protected rom: Cartridge) {
-    this.memory = Uint8Array.from({ length: 0xffff }).fill(0, 0, 0xffff);
+    this.memory = Uint8Array.from({ length: 0xffff + 1 }).fill(
+      0,
+      0,
+      0xffff + 1
+    );
   }
 
   read(addr: number): number {
