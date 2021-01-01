@@ -2,9 +2,9 @@ import { pop16PC, push16 } from './stack';
 import { InstructionFunction, InstructionMap } from './types';
 import { getImmediate16 } from './util';
 
-const ret: InstructionFunction = (registers, memory) => {
+const ret: InstructionFunction = (registers, memory, _, meta) => {
   const newPC = pop16PC(registers, memory);
-  registers.PC = newPC;
+  registers.PC = newPC - meta.size;
 };
 
 const call: InstructionFunction = (registers, memory, _, meta) => {

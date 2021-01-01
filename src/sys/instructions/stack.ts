@@ -11,8 +11,8 @@ export const push16 = (
   memory: RAM,
   v: number
 ): void => {
-  push8(registers, memory, v & 0xff);
   push8(registers, memory, (v & 0xff00) >> 8);
+  push8(registers, memory, v & 0xff);
 };
 
 export const pop8 = (
