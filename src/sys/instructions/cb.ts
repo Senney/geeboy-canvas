@@ -4,26 +4,28 @@ import { InstructionFunction, InstructionMap } from './types';
 const shiftRegisterRight = (register: RegisterNames): InstructionFunction => {
   return (registers) => {
     const value = registers.getRegister(register);
+    const newValue = value >> 1;
     const lsb = value & 0b1;
-    registers.setRegister(register, value >> 1);
+    registers.setRegister(register, newValue);
     registers.setFlags({
       carry: lsb,
       halfCarry: 0,
       subtract: 0,
-      zero: value === 0 ? 1 : 0,
+      zero: newValue === 0 ? 1 : 0,
     });
   };
 };
 
 const shiftHLRight: InstructionFunction = (registers, memory) => {
   const value = memory.read(registers.HL);
+  const newValue = value >> 1;
   const lsb = value & 0b1;
-  memory.write(registers.HL, value >> 1);
+  memory.write(registers.HL, newValue);
   registers.setFlags({
     carry: lsb,
     halfCarry: 0,
     subtract: 0,
-    zero: value === 0 ? 1 : 0,
+    zero: newValue === 0 ? 1 : 0,
   });
 };
 

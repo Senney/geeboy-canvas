@@ -33,7 +33,7 @@ const incrementRegister = (register: RegisterNames): InstructionFunction => {
   return (registers) => {
     const v = registers.getRegister(register);
     const hc = (((v & 0xf) + 1) & 0xf0) > 0;
-    const res = v + 1;
+    const res = (v + 1) & 0xFF;
     registers.setRegister(register, res);
     registers.setFlags({
       zero: res === 0 ? 1 : 0,

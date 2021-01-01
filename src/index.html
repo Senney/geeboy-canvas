@@ -19,6 +19,7 @@
       </div>
       <div>
         <button id="step">></button>
+        <button id="step-10">> x 10</button>
         <button id="run-to-unimplemented">>></button>
         <div>
           <span id="current-pc" style="font-weight: bold"></span>
@@ -62,10 +63,45 @@
               <td>L</td>
               <td id="l-reg">0x00</td>
             </tr>
+            <tr>
+              <td>BC</td>
+              <td id="bc-reg"></td>
+            </tr>
+            <tr>
+              <td>DE</td>
+              <td id="de-reg"></td>
+            </tr>
+            <tr>
+              <td>HL</td>
+              <td id="hl-reg"></td>
+            </tr>
+          </table>
+          <table>
+            <tr>
+              <th>Flag</th>
+              <th>Value</th>
+            </tr>
+            <tr>
+              <td>Zero</td>
+              <td id="zero-reg"></td>
+            </tr>
+            <tr>
+              <td>Subtract</td>
+              <td id="subtract-reg"></td>
+            </tr>
+            <tr>
+              <td>Half-Carry</td>
+              <td id="halfcarry-reg"></td>
+            </tr>
+            <tr>
+              <td>Carry</td>
+              <td id="carry-reg"></td>
+            </tr>
           </table>
         </div>
       </div>
       <div>
+        <span id="next-instruction"></span>
         <ul id="instruction-history"></ul>
       </div>
     </div>

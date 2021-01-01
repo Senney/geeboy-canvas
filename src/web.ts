@@ -20,6 +20,13 @@ export const dumpRegistersToTable = (registers: RegisterSet): void => {
   setRegisterInTable('E', registers.E);
   setRegisterInTable('H', registers.H);
   setRegisterInTable('L', registers.L);
+  setRegisterInTable('BC', registers.BC);
+  setRegisterInTable('DE', registers.DE);
+  setRegisterInTable('HL', registers.HL);
+  setRegisterInTable('zero', registers.flags.zero);
+  setRegisterInTable('carry', registers.flags.carry);
+  setRegisterInTable('halfcarry', registers.flags.halfCarry);
+  setRegisterInTable('subtract', registers.flags.subtract);
 };
 
 export const dumpSurroundingProgram = (
@@ -43,7 +50,8 @@ export const dumpInstructionHistory = (cpu: CPU): void => {
   const target = document.getElementById('instruction-history');
   target.innerHTML = '';
 
-  for (const instr of [...cpu.instrHistory].reverse()) {
+  document.getElementById('next-instruction').textContent = cpu.nextInstruction;
+  for (const instr of [...cpu.instrHistory].reverse().slice(0, 10)) {
     const e = document.createElement('li');
     e.textContent = instr;
     target.appendChild(e);

@@ -41,6 +41,14 @@ const main = async () => {
     dumpRegistersToTable(cpu.registers);
     dumpSurroundingProgram(cpu.registers, cart);
   };
+  document.getElementById('step-10').onclick = () => {
+    for (let i = 0; i < 10; i++) {
+      cpu.step();
+    }
+    dumpInstructionHistory(cpu);
+    dumpRegistersToTable(cpu.registers);
+    dumpSurroundingProgram(cpu.registers, cart);
+  };
   document.getElementById('run-to-unimplemented').onclick = () => {
     while (cpu.hasUnimplemented === false) {
       cpu.step();

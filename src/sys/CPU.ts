@@ -12,6 +12,7 @@ export class CPU {
 
   public hasUnimplemented = false;
   public instrHistory = [];
+  public nextInstruction: string;
 
   constructor(private rom: Cartridge, private mem: RAM) {
     this.r = new RegisterSet();
@@ -23,10 +24,7 @@ export class CPU {
       return;
     }
 
-    let instr = this.rom.readByte(this.r.PC);
-    if (instr === 0xcb) {
-      instr = (instr << 8) | this.rom.readByte(this.r.PC + 1);
-    }
+    const instr = this.getCurrentInstruction();
 
     const meta = InstructionMetadata.get(instr);
     console.log(`0x${instr.toString(16)}`);
@@ -48,16 +46,27 @@ export class CPU {
       return;
     }
 
-    console.log(`Running ${meta.name}`);
     const cycles = func(this.r, this.mem, this, meta) ?? meta.cycles[0];
 
     this.r.PC += meta.size;
     this.instrHistory.push(meta.name);
+    this.nextInstruction = InstructionMetadata.get(
+      this.getCurrentInstruction()
+    ).name;
   }
 
   public enableInterrupts(): boolean {
     this.interruptsEnabled = true;
     return true;
+  }
+
+  private getCurrentInstruction(): number {
+    let instr = this.rom.readByte(this.r.PC);
+    if (instr === 0xcb) {
+      instr = (instr << 8) | this.rom.readByte(this.r.PC + 1);
+    }
+
+    return instr;
   }
 
   public disableInterrupts(): boolean {
