@@ -26,6 +26,17 @@ const orer = (registers: RegisterSet) => (op1: number, op2: number) => {
   });
 };
 
+const xorer = (registers: RegisterSet) => (op1: number, op2: number) => {
+  const res = op1 ^ op2;
+  registers.A = res;
+  registers.setFlags({
+    zero: res === 0 ? 1 : 0,
+    subtract: 0,
+    halfCarry: 0,
+    carry: 0,
+  });
+};
+
 const fnImmediate8 = (logicFn: LogicFn): InstructionFunction => (
   registers,
   memory
@@ -48,24 +59,25 @@ const fnR8 = (logicFn: LogicFn) => (
   };
 };
 
+const generateLogicFns = (logicFn: LogicFn, baseAddr: number) => {
+  return {
+    [baseAddr++]: fnR8(logicFn)('B'),
+    [baseAddr++]: fnR8(logicFn)('C'),
+    [baseAddr++]: fnR8(logicFn)('D'),
+    [baseAddr++]: fnR8(logicFn)('E'),
+    [baseAddr++]: fnR8(logicFn)('H'),
+    [baseAddr++]: fnR8(logicFn)('L'),
+    [baseAddr++]: fnHLMemory(logicFn),
+    [baseAddr++]: fnR8(logicFn)('A'),
+  };
+};
+
 const instructionMap: InstructionMap = {
-  0xa0: fnR8(ander)('B'),
-  0xa1: fnR8(ander)('C'),
-  0xa2: fnR8(ander)('D'),
-  0xa3: fnR8(ander)('E'),
-  0xa4: fnR8(ander)('H'),
-  0xa5: fnR8(ander)('L'),
-  0xa6: fnHLMemory(ander),
-  0xa7: fnR8(ander)('A'),
-  0xb0: fnR8(orer)('B'),
-  0xb1: fnR8(orer)('C'),
-  0xb2: fnR8(orer)('D'),
-  0xb3: fnR8(orer)('E'),
-  0xb4: fnR8(orer)('H'),
-  0xb5: fnR8(orer)('L'),
-  0xb6: fnHLMemory(orer),
-  0xb7: fnR8(orer)('A'),
+  ...generateLogicFns(ander, 0xa0),
+  ...generateLogicFns(xorer, 0xa8),
+  ...generateLogicFns(orer, 0xb0),
   0xe6: fnImmediate8(ander),
+  0xee: fnImmediate8(xorer),
   0xf6: fnImmediate8(orer),
 };
 

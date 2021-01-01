@@ -71,6 +71,19 @@ const loadAToOffsetImmediate8: InstructionFunction = (registers, memory) => {
   memory.write(0xff00 + addr, registers.A);
 };
 
+const loadAToOffsetC: InstructionFunction = (registers, memory) => {
+  memory.write(0xff00 + registers.C, registers.A);
+};
+
+const loadOffsetImmediate8ToA: InstructionFunction = (registers, memory) => {
+  const addr = getImmediate8(registers, memory);
+  registers.A = memory.read(0xff00 + addr);
+};
+
+const loadOffsetFromCToA: InstructionFunction = (registers, memory) => {
+  registers.A = memory.read(0xff00 + registers.C);
+};
+
 const instructionMap: InstructionMap = {
   0x6: loadRegisterImmediate8('B'),
   0x8: writeSPToMemory,
@@ -84,7 +97,10 @@ const instructionMap: InstructionMap = {
   0x31: loadSPImmediate16,
   0x3e: loadRegisterImmediate8('A'),
   0xe0: loadAToOffsetImmediate8,
+  0xe2: loadAToOffsetC,
   0xea: loadImmediateMemoryWithRegister('A'),
+  0xf0: loadOffsetImmediate8ToA,
+  0xf2: loadOffsetFromCToA,
   ...makeRegisterCopySet(0x40, 'B'),
   ...makeRegisterCopySet(0x48, 'C'),
   ...makeRegisterCopySet(0x50, 'D'),
