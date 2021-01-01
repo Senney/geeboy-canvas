@@ -72,13 +72,103 @@ const generateLogicFns = (logicFn: LogicFn, baseAddr: number) => {
   };
 };
 
+const setBitInValue = (bit: number, value: number) => {
+  if (bit < 0 || bit > 7) {
+    throw new Error('Bit must be between 0 and 7');
+  }
+
+  const mask = (0x1 << bit) ^ 0xff;
+  return value & mask;
+};
+
+const setBitInRegister = (
+  register: RegisterNames,
+  bit: number
+): InstructionFunction => (registers) => {
+  const value = registers.getRegister(register);
+  registers.setRegister(register, setBitInValue(bit, value));
+};
+
+const setBitInMemory = (bit: number): InstructionFunction => (
+  registers,
+  memory
+) => {
+  const value = memory.read(registers.HL);
+  memory.write(registers.HL, setBitInValue(bit, value));
+};
+
+const testBitInValue = (bit: number, value: number) => {
+  const mask = 0x1 << bit;
+  return (value & mask) > 0;
+};
+
+const testBitInRegister = (
+  register: RegisterNames,
+  bit: number
+): InstructionFunction => (registers) => {
+  const v = registers.getRegister(register);
+  registers.setFlags({
+    zero: testBitInValue(bit, v) ? 0 : 1,
+    subtract: 0,
+    halfCarry: 1,
+  });
+};
+
+const testBitInMemory = (bit: number): InstructionFunction => (
+  registers,
+  memory
+) => {
+  const v = memory.read(registers.HL);
+  registers.setFlags({
+    zero: testBitInValue(bit, v) ? 0 : 1,
+    subtract: 0,
+    halfCarry: 1,
+  });
+};
+
+const generateBitFunctions = (): InstructionMap => {
+  const regOrder = ['B', 'C', 'D', 'E', 'H', 'L', 'HL', 'A'];
+  const baseBitInstructionIdx = 0x40;
+  const baseResInstructionIdx = 0x80;
+  const instructions: InstructionMap = {};
+
+  for (let i = 0; i < 8; i++) {
+    for (let j = 0; j < regOrder.length; j++) {
+      const reg = regOrder[j];
+      const instr = 0xcb00 | (baseBitInstructionIdx + i * 8 + j);
+      if (reg === 'HL') {
+        instructions[instr] = testBitInMemory(i);
+      } else {
+        instructions[instr] = testBitInRegister(reg as RegisterNames, i);
+      }
+    }
+  }
+
+  for (let i = 0; i < 8; i++) {
+    for (let j = 0; j < regOrder.length; j++) {
+      const reg = regOrder[j];
+      const instr = 0xcb00 | (baseResInstructionIdx + i * 8 + j);
+      if (reg === 'HL') {
+        instructions[instr] = setBitInMemory(i);
+      } else {
+        instructions[instr] = setBitInRegister(reg as RegisterNames, i);
+      }
+    }
+  }
+
+  return instructions;
+};
+
 const instructionMap: InstructionMap = {
   ...generateLogicFns(ander, 0xa0),
   ...generateLogicFns(xorer, 0xa8),
   ...generateLogicFns(orer, 0xb0),
+  ...generateBitFunctions(),
   0xe6: fnImmediate8(ander),
   0xee: fnImmediate8(xorer),
   0xf6: fnImmediate8(orer),
 };
+
+console.log(Object.keys(instructionMap).map((s) => parseInt(s).toString(16)));
 
 export default instructionMap;
