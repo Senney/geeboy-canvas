@@ -3,7 +3,11 @@ import { Cartridge } from './rom/Cartridge';
 import { RomLoader } from './rom/RomLoader';
 import { CPU } from './sys/CPU';
 import { RAMFactory } from './mem/RAMFactory';
-import { dumpRegistersToTable, dumpSurroundingProgram } from './web';
+import {
+  dumpInstructionHistory,
+  dumpRegistersToTable,
+  dumpSurroundingProgram,
+} from './web';
 
 const main = async () => {
   const canvasElement = document.getElementById('canvas');
@@ -33,6 +37,7 @@ const main = async () => {
   dumpSurroundingProgram(cpu.registers, cart);
   document.getElementById('step').onclick = () => {
     cpu.step();
+    dumpInstructionHistory(cpu);
     dumpRegistersToTable(cpu.registers);
     dumpSurroundingProgram(cpu.registers, cart);
   };
@@ -41,6 +46,7 @@ const main = async () => {
       cpu.step();
     }
 
+    dumpInstructionHistory(cpu);
     dumpRegistersToTable(cpu.registers);
     dumpSurroundingProgram(cpu.registers, cart);
   };

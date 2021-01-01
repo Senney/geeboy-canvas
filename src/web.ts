@@ -1,4 +1,5 @@
 import { Cartridge } from './rom/Cartridge';
+import { CPU } from './sys/CPU';
 import { RegisterSet } from './sys/RegisterSet';
 
 const toHex = (value: number): string => {
@@ -36,4 +37,15 @@ export const dumpSurroundingProgram = (
     );
   }
   document.getElementById('pc-bytes').textContent = values.join(' ');
+};
+
+export const dumpInstructionHistory = (cpu: CPU): void => {
+  const target = document.getElementById('instruction-history');
+  target.innerHTML = '';
+
+  for (const instr of [...cpu.instrHistory].reverse()) {
+    const e = document.createElement('li');
+    e.textContent = instr;
+    target.appendChild(e);
+  }
 };
