@@ -22,6 +22,9 @@ export class MBC1 extends RAMBase {
     this.ramBank = 1;
 
     this.cartRam = new Uint8Array(rom.metadata.ramSize);
+
+    // Initial value of LCDC is 0x91.
+    this.write(0xff40, 0x91);
   }
 
   public read(addr: number): number {
@@ -68,7 +71,6 @@ export class MBC1 extends RAMBase {
         case 1:
           // Support MBC3 automatically.
           this.ramBank = value & 0b1111111;
-          console.log('Switched to ram bank', this.ramBank);
           break;
       }
     }
@@ -107,7 +109,6 @@ export class MBC1 extends RAMBase {
       bank += 1;
     }
 
-    console.log('Setting selected rom bank to', bank);
     this.romBank = bank;
   }
 }

@@ -9,6 +9,7 @@ import {
   dumpSurroundingProgram,
 } from './web';
 import { InterruptManager } from './sys/InterruptManager';
+import { GPU } from './gfx/GPU';
 
 const MILLISECONDS_PER_CYCLE = 1000 / 4_194_304;
 
@@ -35,16 +36,18 @@ const main = async () => {
 
   const ram = RAMFactory.getImplementation(cart);
   const cpu = new CPU(cart, ram);
+  const interruptManager = new InterruptManager(cpu, ram);
+  const gpu = new GPU(canvas, ram, interruptManager);
 
   ram.write(0xff44, 0x91);
 
-  const interruptManager = new InterruptManager(cpu, ram);
   const runFrame = () => {
     let f = 0;
     const start = performance.now();
     while (f < 70224) {
       const cycles = cpu.step();
       f += cycles;
+      gpu.step(f);
 
       if (interruptManager.hasInterrupt()) {
         interruptManager.handleInterrupt();
@@ -53,7 +56,6 @@ const main = async () => {
       interruptManager.clearInterrupts();
     }
 
-    interruptManager.fire('VBlank');
     console.log('frame time: ', performance.now() - start);
   };
 
