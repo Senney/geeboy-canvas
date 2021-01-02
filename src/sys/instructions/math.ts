@@ -18,6 +18,18 @@ const subtractor = (
   };
 };
 
+const subtractCarry = (registers: RegisterSet) => (v1: number, v2: number) => {
+  const r = v1 - v2 - registers.flags.carry;
+  registers.setFlags({
+    carry: r < 0 ? 1 : 0,
+    halfCarry: (((v1 & 0xf) - (v2 & 0xf)) & 0x10) > 0 ? 1 : 0,
+    subtract: 1,
+    zero: r === 0 ? 1 : 0,
+  });
+
+  return unsigned(r);
+};
+
 const adder = (registers: RegisterSet) => (v1: number, v2: number) => {
   const result = v1 + v2;
   registers.setFlags({
@@ -26,7 +38,7 @@ const adder = (registers: RegisterSet) => (v1: number, v2: number) => {
     halfCarry: (((v1 & 0xf) + (v2 & 0xf)) & 0x10) > 0 ? 1 : 0,
     carry: result > 0xff ? 1 : 0,
   });
-  return result & 0xff;
+  return unsigned(result);
 };
 
 const addCarry = (registers: RegisterSet) => (v1: number, v2: number) => {
@@ -37,7 +49,7 @@ const addCarry = (registers: RegisterSet) => (v1: number, v2: number) => {
     halfCarry: (((v1 & 0xf) + (v2 & 0xf)) & 0x10) > 0 ? 1 : 0,
     carry: result > 0xff ? 1 : 0,
   });
-  return result & 0xff;
+  return unsigned(result);
 };
 
 const subtractRegisterImmediate8 = (
@@ -155,6 +167,22 @@ const instructionMap: InstructionMap = {
   0x8d: fnRegisterRegister(addCarry, 'A', 'L'),
   0x8e: fnRegisterHLMemory(addCarry, 'A'),
   0x8f: fnRegisterRegister(addCarry, 'A', 'A'),
+  0x90: fnRegisterRegister(subtractor, 'A', 'B'),
+  0x91: fnRegisterRegister(subtractor, 'A', 'C'),
+  0x92: fnRegisterRegister(subtractor, 'A', 'D'),
+  0x93: fnRegisterRegister(subtractor, 'A', 'E'),
+  0x94: fnRegisterRegister(subtractor, 'A', 'H'),
+  0x95: fnRegisterRegister(subtractor, 'A', 'L'),
+  0x96: fnRegisterHLMemory(subtractor, 'A'),
+  0x97: fnRegisterRegister(subtractor, 'A', 'A'),
+  0x98: fnRegisterRegister(subtractCarry, 'A', 'B'),
+  0x99: fnRegisterRegister(subtractCarry, 'A', 'C'),
+  0x9a: fnRegisterRegister(subtractCarry, 'A', 'D'),
+  0x9b: fnRegisterRegister(subtractCarry, 'A', 'E'),
+  0x9c: fnRegisterRegister(subtractCarry, 'A', 'H'),
+  0x9d: fnRegisterRegister(subtractCarry, 'A', 'L'),
+  0x9e: fnRegisterHLMemory(subtractCarry, 'A'),
+  0x9f: fnRegisterRegister(subtractCarry, 'A', 'A'),
   0xd6: subtractRegisterImmediate8('A'),
 };
 
