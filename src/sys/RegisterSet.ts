@@ -177,6 +177,11 @@ export class RegisterSet {
     this.sp = v;
   }
 
+  get AF(): number {
+    const value = combineRegisters(this, 'A', 'F');
+    return value;
+  }
+
   get BC(): number {
     const value = combineRegisters(this, 'B', 'C');
     return value;
