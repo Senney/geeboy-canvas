@@ -7,6 +7,7 @@ import cbInstructions from './cb';
 import bitwiseInstructions from './bitwise';
 import compareInstructions from './cmp';
 import funcInstructions from './func';
+import rotateInstructions from './rotate';
 
 export const instructionSet = mergeInstructionSets([
   specialInstructions,
@@ -17,4 +18,5 @@ export const instructionSet = mergeInstructionSets([
   bitwiseInstructions,
   compareInstructions,
   funcInstructions,
+  rotateInstructions,
 ]);
