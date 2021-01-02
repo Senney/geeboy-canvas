@@ -58,18 +58,42 @@ const decrementRegister = (register: RegisterNames): InstructionFunction => {
 };
 
 const instructionMap: InstructionMap = {
+  0x03: (register) => {
+    register.BC++;
+  },
   0x04: incrementRegister('B'),
   0x05: decrementRegister('B'),
+  0x0b: (register) => {
+    register.BC--;
+  },
   0x0c: incrementRegister('C'),
   0x0d: decrementRegister('C'),
+  0x13: (register) => {
+    register.DE++;
+  },
   0x14: incrementRegister('D'),
   0x15: decrementRegister('D'),
+  0x1b: (register) => {
+    register.DE--;
+  },
   0x1c: incrementRegister('E'),
   0x1d: decrementRegister('E'),
+  0x23: (register) => {
+    register.HL++;
+  },
   0x24: incrementRegister('H'),
   0x25: decrementRegister('H'),
+  0x2b: (register) => {
+    register.HL--;
+  },
   0x2c: incrementRegister('L'),
   0x2d: decrementRegister('L'),
+  0x33: (register) => {
+    register.SP++;
+  },
+  0x3b: (register) => {
+    register.SP--;
+  },
   0x3c: incrementRegister('A'),
   0x3d: decrementRegister('A'),
   0xd6: subtractRegisterImmediate8('A'),
