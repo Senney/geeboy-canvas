@@ -8,6 +8,9 @@ import {
   dumpRegistersToTable,
   dumpSurroundingProgram,
 } from './web';
+import { InterruptManager } from './sys/InterruptManager';
+
+const MILLISECONDS_PER_CYCLE = 1000 / 4_194_304;
 
 const main = async () => {
   const canvasElement = document.getElementById('canvas');
@@ -33,6 +36,27 @@ const main = async () => {
   const ram = RAMFactory.getImplementation(cart);
   const cpu = new CPU(cart, ram);
 
+  ram.write(0xff44, 0x91);
+
+  const interruptManager = new InterruptManager(cpu, ram);
+  const runFrame = () => {
+    let f = 0;
+    const start = performance.now();
+    while (f < 70224) {
+      const cycles = cpu.step();
+      f += cycles;
+
+      if (interruptManager.hasInterrupt()) {
+        interruptManager.handleInterrupt();
+      }
+
+      interruptManager.clearInterrupts();
+    }
+
+    interruptManager.fire('VBlank');
+    console.log('frame time: ', performance.now() - start);
+  };
+
   dumpRegistersToTable(cpu.registers);
   dumpSurroundingProgram(cpu.registers, ram);
   document.getElementById('step').onclick = () => {
@@ -42,9 +66,7 @@ const main = async () => {
     dumpSurroundingProgram(cpu.registers, ram);
   };
   document.getElementById('step-10').onclick = () => {
-    for (let i = 0; i < 10; i++) {
-      cpu.step();
-    }
+    runFrame();
     dumpInstructionHistory(cpu);
     dumpRegistersToTable(cpu.registers);
     dumpSurroundingProgram(cpu.registers, ram);
@@ -53,7 +75,7 @@ const main = async () => {
     let i = 0;
     while (cpu.hasUnimplemented === false && i < 10000) {
       try {
-        cpu.step();
+        runFrame();
         i++;
       } catch (e) {
         break;
@@ -69,7 +91,7 @@ const main = async () => {
     let i = 0;
     while (cpu.registers.PC !== parseInt(pcValue) && i < 50000) {
       try {
-        cpu.step();
+        runFrame();
         i++;
       } catch (e) {
         break;

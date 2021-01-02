@@ -9,6 +9,7 @@ import { instructionSet } from './instructions';
 import { RAM } from '../mem/RAM';
 import { toHex } from '../web';
 import { getImmediate16, getImmediate8 } from './instructions/util';
+import { push16 } from './instructions/stack';
 
 export class CPU {
   private r: RegisterSet;
@@ -18,13 +19,14 @@ export class CPU {
   public hasUnimplemented = false;
   public instrHistory = [];
   public nextInstruction: string;
+  public instrumentation = true;
 
   constructor(private rom: Cartridge, private mem: RAM) {
     this.r = new RegisterSet();
     this.halt = false;
   }
 
-  public step(): void {
+  public step(): number {
     if (this.halt) {
       return;
     }
@@ -32,10 +34,17 @@ export class CPU {
     const instr = this.getCurrentInstruction();
 
     const meta = InstructionMetadata.get(instr);
-    this.instrHistory.push(this.renderInstructionWithData(meta.name, meta));
+    if (this.instrumentation) {
+      this.instrHistory.push(this.renderInstructionWithData(meta.name, meta));
+      this.instrHistory = this.instrHistory.splice(
+        this.instrHistory.length - 10,
+        this.instrHistory.length
+      );
+    }
+
     if (instr === 0x76) {
       this.halt = true;
-      return;
+      return 1;
     }
 
     const func = instructionSet[instr];
@@ -48,24 +57,46 @@ export class CPU {
         }] has not been implemented.`
       );
       this.r.PC += meta.size;
+
+      return meta.cycles[0];
+    }
+
+    const cycles =
+      (func(this.r, this.mem, this, meta) as number) ?? meta.cycles[0];
+
+    this.r.PC += meta.size;
+
+    if (this.instrumentation) {
+      const nextInstructionMetadata = InstructionMetadata.get(
+        this.getCurrentInstruction()
+      );
+      this.nextInstruction = this.renderInstructionWithData(
+        nextInstructionMetadata.name,
+        nextInstructionMetadata
+      );
+    }
+
+    return cycles ?? 0;
+  }
+
+  public interrupt(addr: number): void {
+    if (!this.interruptsEnabled) {
       return;
     }
 
-    const cycles = func(this.r, this.mem, this, meta) ?? meta.cycles[0];
-
-    this.r.PC += meta.size;
-    const nextInstructionMetadata = InstructionMetadata.get(
-      this.getCurrentInstruction()
-    );
-    this.nextInstruction = this.renderInstructionWithData(
-      nextInstructionMetadata.name,
-      nextInstructionMetadata
-    );
+    this.disableInterrupts();
+    push16(this.registers, this.mem, this.registers.PC);
+    this.registers.PC = addr;
   }
 
   public enableInterrupts(): boolean {
     this.interruptsEnabled = true;
     return true;
+  }
+
+  public disableInterrupts(): boolean {
+    this.interruptsEnabled = false;
+    return false;
   }
 
   private getCurrentInstruction(): number {
@@ -75,11 +106,6 @@ export class CPU {
     }
 
     return instr;
-  }
-
-  public disableInterrupts(): boolean {
-    this.interruptsEnabled = false;
-    return false;
   }
 
   public get registers(): RegisterSet {
