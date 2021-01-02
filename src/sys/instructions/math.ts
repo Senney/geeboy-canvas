@@ -185,7 +185,9 @@ const instructionMap: InstructionMap = {
   0x9e: fnRegisterHLMemory(subtractCarry, 'A'),
   0x9f: fnRegisterRegister(subtractCarry, 'A', 'A'),
   0xc6: fnRegisterImmediate8(adder, 'A'),
+  0xce: fnRegisterImmediate8(addCarry, 'A'),
   0xd6: fnRegisterImmediate8(subtractor, 'A'),
+  0xde: fnRegisterImmediate8(subtractCarry, 'A'),
 };
 
 export default instructionMap;

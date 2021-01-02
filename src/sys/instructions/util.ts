@@ -1,6 +1,6 @@
 import { RAM } from '../../mem/RAM';
 import { RegisterNames, RegisterSet } from '../RegisterSet';
-import { InstructionMap } from './types';
+import { InstructionFunction, InstructionMap } from './types';
 
 export const combineRegisters = (
   register: RegisterSet,
@@ -57,4 +57,39 @@ export const mergeInstructionSets = (
 
     return Object.assign(instructionSet, currentSet);
   }, {} as InstructionMap);
+};
+
+export const generateInstructionsSingleRegisterWithHL = (
+  baseInstr: number,
+  normalFn: (src: RegisterNames) => InstructionFunction,
+  hlFn: () => InstructionFunction
+): InstructionMap => {
+  return {
+    [baseInstr++]: normalFn('B'),
+    [baseInstr++]: normalFn('C'),
+    [baseInstr++]: normalFn('D'),
+    [baseInstr++]: normalFn('E'),
+    [baseInstr++]: normalFn('H'),
+    [baseInstr++]: normalFn('L'),
+    [baseInstr++]: hlFn(),
+    [baseInstr++]: normalFn('A'),
+  };
+};
+
+export const generateInstructionsWithHL = (
+  baseInstr: number,
+  dstReg: RegisterNames,
+  normalFn: (dst: RegisterNames, src: RegisterNames) => InstructionFunction,
+  hlFn: (dst?: RegisterNames) => InstructionFunction
+): InstructionMap => {
+  return {
+    [baseInstr++]: normalFn(dstReg, 'B'),
+    [baseInstr++]: normalFn(dstReg, 'C'),
+    [baseInstr++]: normalFn(dstReg, 'D'),
+    [baseInstr++]: normalFn(dstReg, 'E'),
+    [baseInstr++]: normalFn(dstReg, 'H'),
+    [baseInstr++]: normalFn(dstReg, 'L'),
+    [baseInstr++]: hlFn(dstReg),
+    [baseInstr++]: normalFn(dstReg, 'A'),
+  };
 };
