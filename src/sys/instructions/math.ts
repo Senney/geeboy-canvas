@@ -18,6 +18,28 @@ const subtractor = (
   };
 };
 
+const adder = (registers: RegisterSet) => (v1: number, v2: number) => {
+  const result = v1 + v2;
+  registers.setFlags({
+    zero: result === 0 ? 1 : 0,
+    subtract: 0,
+    halfCarry: (((v1 & 0xf) + (v2 & 0xf)) & 0x10) > 0 ? 1 : 0,
+    carry: result > 0xff ? 1 : 0,
+  });
+  return result & 0xff;
+};
+
+const addCarry = (registers: RegisterSet) => (v1: number, v2: number) => {
+  const result = v1 + v2 + registers.flags.carry;
+  registers.setFlags({
+    zero: result === 0 ? 1 : 0,
+    subtract: 0,
+    halfCarry: (((v1 & 0xf) + (v2 & 0xf)) & 0x10) > 0 ? 1 : 0,
+    carry: result > 0xff ? 1 : 0,
+  });
+  return result & 0xff;
+};
+
 const subtractRegisterImmediate8 = (
   register: RegisterNames
 ): InstructionFunction => {
@@ -27,6 +49,27 @@ const subtractRegisterImmediate8 = (
     const ret = subtractor(registers)(value, immediate);
     registers.setRegister(register, ret);
   };
+};
+
+const fnRegisterRegister = (
+  fn: (registers: RegisterSet) => (v1: number, v2: number) => number,
+  dst: RegisterNames,
+  src: RegisterNames
+): InstructionFunction => (registers) => {
+  const v1 = registers.getRegister(dst);
+  const v2 = registers.getRegister(src);
+  const res = fn(registers)(v1, v2);
+  registers.setRegister(dst, res);
+};
+
+const fnRegisterHLMemory = (
+  fn: (registers: RegisterSet) => (v1: number, v2: number) => number,
+  dst: RegisterNames
+): InstructionFunction => (registers, memory) => {
+  const v1 = registers.getRegister(dst);
+  const v2 = memory.read(registers.HL);
+  const res = fn(registers)(v1, v2);
+  registers.setRegister(dst, res);
 };
 
 const incrementRegister = (register: RegisterNames): InstructionFunction => {
@@ -96,6 +139,22 @@ const instructionMap: InstructionMap = {
   },
   0x3c: incrementRegister('A'),
   0x3d: decrementRegister('A'),
+  0x80: fnRegisterRegister(adder, 'A', 'B'),
+  0x81: fnRegisterRegister(adder, 'A', 'C'),
+  0x82: fnRegisterRegister(adder, 'A', 'D'),
+  0x83: fnRegisterRegister(adder, 'A', 'E'),
+  0x84: fnRegisterRegister(adder, 'A', 'H'),
+  0x85: fnRegisterRegister(adder, 'A', 'L'),
+  0x86: fnRegisterHLMemory(adder, 'A'),
+  0x87: fnRegisterRegister(adder, 'A', 'A'),
+  0x88: fnRegisterRegister(addCarry, 'A', 'B'),
+  0x89: fnRegisterRegister(addCarry, 'A', 'C'),
+  0x8a: fnRegisterRegister(addCarry, 'A', 'D'),
+  0x8b: fnRegisterRegister(addCarry, 'A', 'E'),
+  0x8c: fnRegisterRegister(addCarry, 'A', 'H'),
+  0x8d: fnRegisterRegister(addCarry, 'A', 'L'),
+  0x8e: fnRegisterHLMemory(addCarry, 'A'),
+  0x8f: fnRegisterRegister(addCarry, 'A', 'A'),
   0xd6: subtractRegisterImmediate8('A'),
 };
 
