@@ -42,9 +42,15 @@ export const dumpSurroundingProgram = (
 
   const values = [];
   for (let i = registers.PC - 4; i <= registers.PC + 4; i++) {
-    values.push(
-      i === registers.PC ? `*${toHex(mem.read(i))}*` : toHex(mem.read(i))
-    );
+    try {
+      values.push(
+        i === registers.PC ? `*${toHex(mem.read(i))}*` : toHex(mem.read(i))
+      );
+    } catch (e) {
+      values.push(
+        i === registers.PC ? `*???*` : '???'
+      );
+    }
   }
   document.getElementById('pc-bytes').textContent = values.join(' ');
 };

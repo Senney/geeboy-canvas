@@ -119,6 +119,9 @@ const instructionMap: InstructionMap = {
   },
   0x04: incrementRegister('B'),
   0x05: decrementRegister('B'),
+  0x09: (registers) => {
+    registers.HL = registers.HL + registers.BC;
+  },
   0x0b: (register) => {
     register.BC--;
   },
@@ -132,6 +135,9 @@ const instructionMap: InstructionMap = {
   0x1b: (register) => {
     register.DE--;
   },
+  0x19: (registers) => {
+    registers.HL = registers.HL + registers.DE;
+  },
   0x1c: incrementRegister('E'),
   0x1d: decrementRegister('E'),
   0x23: (register) => {
@@ -139,6 +145,9 @@ const instructionMap: InstructionMap = {
   },
   0x24: incrementRegister('H'),
   0x25: decrementRegister('H'),
+  0x29: (registers) => {
+    registers.HL = registers.HL + registers.HL;
+  },
   0x2b: (register) => {
     register.HL--;
   },
@@ -146,6 +155,15 @@ const instructionMap: InstructionMap = {
   0x2d: decrementRegister('L'),
   0x33: (register) => {
     register.SP++;
+  },
+  0x34: (register, memory) => {
+    memory.write(register.HL, memory.read(register.HL) + 1);
+  },
+  0x35: (register, memory) => {
+    memory.write(register.HL, memory.read(register.HL) - 1);
+  },
+  0x39: (registers) => {
+    registers.HL = registers.HL + registers.SP;
   },
   0x3b: (register) => {
     register.SP--;
