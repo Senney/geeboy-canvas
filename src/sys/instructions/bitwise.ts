@@ -159,11 +159,32 @@ const generateBitFunctions = (): InstructionMap => {
   return instructions;
 };
 
+const complement = (registers: RegisterSet): void => {
+  registers.A = ~registers.A & 0xff;
+};
+
+const complementCarry = (registers: RegisterSet): void => {
+  registers.setFlags({
+    carry: ~registers.flags.zero & 0x1,
+  });
+};
+
+const setCarryFlag = (registers: RegisterSet): void => {
+  registers.setFlags({
+    subtract: 0,
+    halfCarry: 0,
+    carry: 1,
+  });
+};
+
 const instructionMap: InstructionMap = {
   ...generateLogicFns(ander, 0xa0),
   ...generateLogicFns(xorer, 0xa8),
   ...generateLogicFns(orer, 0xb0),
   ...generateBitFunctions(),
+  0x2f: complement,
+  0x37: setCarryFlag,
+  0x3f: complementCarry,
   0xe6: fnImmediate8(ander),
   0xee: fnImmediate8(xorer),
   0xf6: fnImmediate8(orer),

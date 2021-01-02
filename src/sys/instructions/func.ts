@@ -22,6 +22,12 @@ const retCondition = (key: keyof Flags, value): InstructionFunction => {
   };
 };
 
+const retI: InstructionFunction = (registers, memory, cpu, meta) => {
+  cpu.enableInterrupts();
+  const newPC = pop16PC(registers, memory);
+  registers.PC = newPC - meta.size;
+};
+
 function callInternal(
   registers: RegisterSet,
   memory: RAM,
@@ -93,6 +99,7 @@ const instructionMap: InstructionMap = {
   0xd8: retCondition('carry', 1),
   0xdc: callCondition('carry', 1),
   0xdf: rst(0x18),
+  0xd9: retI,
   0xe1: pop('H', 'L'),
   0xe5: push((r) => r.HL),
   0xe7: rst(0x20),
