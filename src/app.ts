@@ -51,7 +51,7 @@ const main = async () => {
   };
   document.getElementById('run-to-unimplemented').onclick = () => {
     let i = 0;
-    while (cpu.hasUnimplemented === false && i < 1000) {
+    while (cpu.hasUnimplemented === false && i < 10000) {
       try {
         cpu.step();
         i++;

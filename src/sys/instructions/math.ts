@@ -52,13 +52,14 @@ const addCarry = (registers: RegisterSet) => (v1: number, v2: number) => {
   return unsigned(result);
 };
 
-const subtractRegisterImmediate8 = (
+const fnRegisterImmediate8 = (
+  fn: (registers: RegisterSet) => (v1: number, v2: number) => number,
   register: RegisterNames
 ): InstructionFunction => {
   return (registers, memory) => {
     const value = registers.getRegister(register);
     const immediate = getImmediate8(registers, memory);
-    const ret = subtractor(registers)(value, immediate);
+    const ret = fn(registers)(value, immediate);
     registers.setRegister(register, ret);
   };
 };
@@ -183,7 +184,8 @@ const instructionMap: InstructionMap = {
   0x9d: fnRegisterRegister(subtractCarry, 'A', 'L'),
   0x9e: fnRegisterHLMemory(subtractCarry, 'A'),
   0x9f: fnRegisterRegister(subtractCarry, 'A', 'A'),
-  0xd6: subtractRegisterImmediate8('A'),
+  0xc6: fnRegisterImmediate8(adder, 'A'),
+  0xd6: fnRegisterImmediate8(subtractor, 'A'),
 };
 
 export default instructionMap;
