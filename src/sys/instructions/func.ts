@@ -10,6 +10,18 @@ const ret: InstructionFunction = (registers, memory, _, meta) => {
   registers.PC = newPC - meta.size;
 };
 
+const retCondition = (key: keyof Flags, value): InstructionFunction => {
+  return (registers, memory, _, meta) => {
+    if (registers.flags[key] === value) {
+      const newPC = pop16PC(registers, memory);
+      registers.PC = newPC - meta.size;
+      return meta.cycles[0];
+    }
+
+    return meta.cycles[1];
+  };
+};
+
 function callInternal(
   registers: RegisterSet,
   memory: RAM,
@@ -53,15 +65,19 @@ const pop = (
 };
 
 const instructionMap: InstructionMap = {
+  0xc0: retCondition('zero', 0),
   0xc1: pop('B', 'C'),
   0xc4: callCondition('zero', 0),
   0xc5: push((r) => r.BC),
+  0xc8: retCondition('zero', 1),
   0xc9: ret,
   0xcc: callCondition('zero', 1),
   0xcd: call,
+  0xd0: retCondition('carry', 0),
   0xd1: pop('D', 'E'),
   0xd4: callCondition('carry', 0),
   0xd5: push((r) => r.DE),
+  0xd8: retCondition('carry', 1),
   0xdc: callCondition('carry', 1),
   0xe1: pop('H', 'L'),
   0xe5: push((r) => r.HL),
