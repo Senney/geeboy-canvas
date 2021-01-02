@@ -85,28 +85,78 @@ const rotateRightMemory = (): InstructionFunction => (registers, memory) => {
   memory.write(registers.HL, rotated);
 };
 
+const generateSetBitInstruction = (bit: number) => (
+  register: RegisterNames
+): InstructionFunction => (registers) => {
+  const v = registers.getRegister(register);
+  const mask = 0b1 << bit;
+  registers.setRegister(register, v | mask);
+};
+
+const generateSetHLMemoryBitInstruction = (
+  bit: number
+) => (): InstructionFunction => (registers, memory) => {
+  const v = memory.read(registers.HL);
+  const mask = 0b1 << bit;
+  memory.write(registers.HL, v | mask);
+};
+
 const instructionMap: InstructionMap = {
-  0xcb30: swapRegisterBits('B'),
-  0xcb31: swapRegisterBits('C'),
-  0xcb32: swapRegisterBits('D'),
-  0xcb33: swapRegisterBits('E'),
-  0xcb34: swapRegisterBits('H'),
-  0xcb35: swapRegisterBits('L'),
-  0xcb36: swapHLBits,
-  0xcb37: swapRegisterBits('A'),
-  0xcb38: shiftRegisterRight('B'),
-  0xcb39: shiftRegisterRight('C'),
-  0xcb3a: shiftRegisterRight('D'),
-  0xcb3b: shiftRegisterRight('E'),
-  0xcb3c: shiftRegisterRight('H'),
-  0xcb3d: shiftRegisterRight('L'),
-  0xcb3e: shiftHLRight,
-  0xcb3f: shiftRegisterRight('A'),
+  ...generateInstructionsSingleRegisterWithHL(
+    0xcb30,
+    swapRegisterBits,
+    () => swapHLBits
+  ),
+  ...generateInstructionsSingleRegisterWithHL(
+    0xcb38,
+    shiftRegisterRight,
+    () => shiftHLRight
+  ),
   0x1f: rotateRight('A'),
   ...generateInstructionsSingleRegisterWithHL(
     0xcb18,
     rotateRight,
     rotateRightMemory
+  ),
+  ...generateInstructionsSingleRegisterWithHL(
+    0xcbc0,
+    generateSetBitInstruction(0),
+    generateSetHLMemoryBitInstruction(0)
+  ),
+  ...generateInstructionsSingleRegisterWithHL(
+    0xcbc8,
+    generateSetBitInstruction(1),
+    generateSetHLMemoryBitInstruction(1)
+  ),
+  ...generateInstructionsSingleRegisterWithHL(
+    0xcbd0,
+    generateSetBitInstruction(2),
+    generateSetHLMemoryBitInstruction(2)
+  ),
+  ...generateInstructionsSingleRegisterWithHL(
+    0xcbd8,
+    generateSetBitInstruction(3),
+    generateSetHLMemoryBitInstruction(3)
+  ),
+  ...generateInstructionsSingleRegisterWithHL(
+    0xcbe0,
+    generateSetBitInstruction(4),
+    generateSetHLMemoryBitInstruction(4)
+  ),
+  ...generateInstructionsSingleRegisterWithHL(
+    0xcbe8,
+    generateSetBitInstruction(5),
+    generateSetHLMemoryBitInstruction(5)
+  ),
+  ...generateInstructionsSingleRegisterWithHL(
+    0xcbf0,
+    generateSetBitInstruction(6),
+    generateSetHLMemoryBitInstruction(6)
+  ),
+  ...generateInstructionsSingleRegisterWithHL(
+    0xcbf8,
+    generateSetBitInstruction(7),
+    generateSetHLMemoryBitInstruction(7)
   ),
 };
 

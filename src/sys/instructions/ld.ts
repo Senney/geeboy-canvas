@@ -1,6 +1,6 @@
 import { InstructionFunction, InstructionMap } from './types';
 import { RegisterNames, RegisterSet } from '../RegisterSet';
-import { getImmediate16, getImmediate8 } from './util';
+import { getImmediate16, getImmediate8, getImmediate8Signed } from './util';
 
 const registerToRegisterLd = (
   dst: RegisterNames,
@@ -143,6 +143,17 @@ const loadHLMemoryFromImmediate8: InstructionFunction = (
   memory.write(registers.HL, getImmediate8(registers, memory));
 };
 
+const loadHLFromSPPlusImmediate8Signed: InstructionFunction = (
+  registers,
+  memory
+) => {
+  registers.HL = registers.SP + getImmediate8Signed(registers, memory);
+};
+
+const loadSPFromHL: InstructionFunction = (registers) => {
+  registers.SP = registers.HL;
+};
+
 const instructionMap: InstructionMap = {
   0x1: loadRegisterPairFromImmediate16('B', 'C'),
   0x2: loadAToMemoryAtRegisterPair('B', 'C'),
@@ -171,6 +182,8 @@ const instructionMap: InstructionMap = {
   0xf0: loadOffsetImmediate8ToA,
   0xf2: loadOffsetFromCToA,
   0xfa: loadAFromImmediate16Memory,
+  0xf8: loadHLFromSPPlusImmediate8Signed,
+  0xf9: loadSPFromHL,
   0x70: loadRegisterInToMemoryAtHL('B'),
   0x71: loadRegisterInToMemoryAtHL('C'),
   0x72: loadRegisterInToMemoryAtHL('D'),
