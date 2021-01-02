@@ -136,6 +136,13 @@ const loadAFromImmediate16Memory: InstructionFunction = (registers, memory) => {
   registers.A = memory.read(getImmediate16(registers, memory));
 };
 
+const loadHLMemoryFromImmediate8: InstructionFunction = (
+  registers,
+  memory
+): void => {
+  memory.write(registers.HL, getImmediate8(registers, memory));
+};
+
 const instructionMap: InstructionMap = {
   0x1: loadRegisterPairFromImmediate16('B', 'C'),
   0x2: loadAToMemoryAtRegisterPair('B', 'C'),
@@ -155,6 +162,7 @@ const instructionMap: InstructionMap = {
   0x2e: loadRegisterImmediate8('L'),
   0x31: loadSPImmediate16,
   0x32: loadHLAndDecrement,
+  0x36: loadHLMemoryFromImmediate8,
   0x3a: loadAAndDecrementHL,
   0x3e: loadRegisterImmediate8('A'),
   0xe0: loadAToOffsetImmediate8,
