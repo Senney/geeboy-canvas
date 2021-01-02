@@ -1,26 +1,27 @@
 import { Cartridge } from '../rom/Cartridge';
 import { RAMBase } from './RAM';
 
-enum BankMode {
-  ROM = 0x0,
-  RAM = 0x1,
-}
-
+const ramBankSize = 0xbfff - 0xa000;
 export class MBC1 extends RAMBase {
-  private bankMode: BankMode;
   private hasRam: boolean;
   private ramEnabled: boolean;
   private romBank: number;
   private ramBank: number;
 
+  private memoryModel: number;
+
+  private cartRam: Uint8Array;
+
   constructor(rom: Cartridge) {
     super(rom);
 
-    this.bankMode = BankMode.ROM;
+    this.memoryModel = 0;
     this.hasRam = rom.metadata.ramType !== 0;
     this.ramEnabled = true;
     this.romBank = 1;
     this.ramBank = 1;
+
+    this.cartRam = new Uint8Array(rom.metadata.ramSize);
   }
 
   public read(addr: number): number {
@@ -36,7 +37,8 @@ export class MBC1 extends RAMBase {
 
     // 0xA000 to 0xBFFF indicate a write to the memory onboard the cart.
     if (0xa000 <= addr && addr <= 0xbfff) {
-      throw new Error('Not implemented.');
+      const bankAddr = addr + ramBankSize * (this.ramBank - 1);
+      return this.cartRam[bankAddr];
     }
 
     return super.read(addr);
@@ -57,12 +59,29 @@ export class MBC1 extends RAMBase {
       return;
     }
 
+    if (0x4000 <= addr && addr <= 0x5fff) {
+      switch (this.memoryModel) {
+        // 16 Mbit/8 Kbyte
+        case 0:
+          break;
+        // 4 MBit/32 Kbyte
+        case 1:
+          // Support MBC3 automatically.
+          this.ramBank = value & 0b1111111;
+          console.log('Switched to ram bank', this.ramBank);
+          break;
+      }
+    }
+
     if (0x6000 <= addr && addr <= 0x7fff) {
-      throw Error('Switching memory mdoels is not supported');
+      this.memoryModel = value & 0b1;
+      return;
     }
 
     if (0xa000 <= addr && addr <= 0xbfff) {
-      throw new Error('Writing to external memory is not supported.');
+      const bankAddr = addr + ramBankSize * (this.ramBank - 1);
+      this.cartRam[bankAddr] = value;
+      return;
     }
 
     return super.write(addr, value);
