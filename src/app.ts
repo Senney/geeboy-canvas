@@ -73,7 +73,7 @@ const main = async () => {
   };
   document.getElementById('run-to-unimplemented').onclick = () => {
     let i = 0;
-    while (cpu.hasUnimplemented === false && i < 10000) {
+    while (cpu.hasUnimplemented === false && i < 60) {
       try {
         runFrame();
         i++;

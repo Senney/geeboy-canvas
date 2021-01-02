@@ -28,7 +28,7 @@ export class CPU {
 
   public step(): number {
     if (this.halt) {
-      return;
+      return 4;
     }
 
     const instr = this.getCurrentInstruction();
@@ -43,8 +43,14 @@ export class CPU {
     }
 
     if (instr === 0x76) {
-      this.halt = true;
-      return 1;
+      this.r.PC += meta.size;
+      if (this.interruptsEnabled) {
+        this.halt = true;
+      } else {
+        // Per the manual, the next instruction is also skipped when interrupts are disabled.
+        this.r.PC += InstructionMetadata.get(this.getCurrentInstruction()).size;
+      }
+      return 4;
     }
 
     const func = instructionSet[instr];
@@ -84,6 +90,7 @@ export class CPU {
       return;
     }
 
+    this.halt = false;
     this.disableInterrupts();
     push16(this.registers, this.mem, this.registers.PC);
     this.registers.PC = addr;
