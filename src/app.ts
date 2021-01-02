@@ -89,9 +89,9 @@ const main = async () => {
   document.getElementById('run-to-pc').onclick = () => {
     const pcValue = (document.getElementById('pc') as HTMLInputElement).value;
     let i = 0;
-    while (cpu.registers.PC !== parseInt(pcValue) && i < 50000) {
+    while (cpu.registers.PC !== parseInt(pcValue)) {
       try {
-        runFrame();
+        cpu.step();
         i++;
       } catch (e) {
         break;

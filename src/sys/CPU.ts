@@ -36,8 +36,8 @@ export class CPU {
     const meta = InstructionMetadata.get(instr);
     if (this.instrumentation) {
       this.instrHistory.push(this.renderInstructionWithData(meta.name, meta));
-      this.instrHistory = this.instrHistory.splice(
-        this.instrHistory.length - 10,
+      this.instrHistory = this.instrHistory.slice(
+        this.instrHistory.length - 100,
         this.instrHistory.length
       );
     }
@@ -151,6 +151,8 @@ export class CPU {
       }
     });
 
-    return `[${toHex(meta.opcode)}] ${instr} ${renderedParts.join(' ')}`;
+    return `[${toHex(this.registers.PC)}][${toHex(
+      meta.opcode
+    )}] ${instr} ${renderedParts.join(' ')}`;
   }
 }

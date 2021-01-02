@@ -60,7 +60,7 @@ export const dumpInstructionHistory = (cpu: CPU): void => {
   target.innerHTML = '';
 
   document.getElementById('next-instruction').textContent = cpu.nextInstruction;
-  for (const instr of [...cpu.instrHistory].reverse().slice(0, 10)) {
+  for (const instr of [...cpu.instrHistory].reverse().slice(0, 100)) {
     const e = document.createElement('li');
     e.textContent = instr;
     target.appendChild(e);

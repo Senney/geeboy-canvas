@@ -38,7 +38,7 @@ const INTERRUPT_VBLANK = 0b00001;
 export class InterruptManager {
   constructor(private cpu: CPU, private memory: RAM) {}
 
-  fire(interrupt: Interrupt) {
+  fire(interrupt: Interrupt): void {
     switch (interrupt) {
       case 'Button':
         this.setIFRegister(INTERRUPT_BUTTON);
@@ -84,7 +84,7 @@ export class InterruptManager {
     }
   }
 
-  clearInterrupts() {
+  clearInterrupts(): void {
     this.memory.write(IF_REGISTER, 0x0000);
   }
 
