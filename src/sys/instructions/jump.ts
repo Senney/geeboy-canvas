@@ -5,7 +5,11 @@
 import { InstructionMetadata } from '../InstructionMetadata';
 import { Flags } from '../RegisterSet';
 import { InstructionFunction, InstructionMap } from './types';
-import { getImmediate16, getImmediate16Signed, getImmediate8Signed } from './util';
+import {
+  getImmediate16,
+  getImmediate16Signed,
+  getImmediate8Signed,
+} from './util';
 
 const jumpImmediate16: InstructionFunction = (registers, memory, _, meta) => {
   registers.PC = getImmediate16(registers, memory) - meta.size;
@@ -22,8 +26,7 @@ const jumpRelativeIfConditionMet = (
   if (registers.getFlag(condition) === conditionValue) {
     // Cast from unsigned integer to signed. No idea if this works. :)
     // We may need to offset by the meta.size.
-    registers.PC =
-      registers.PC + getImmediate8Signed(registers, memory);
+    registers.PC = registers.PC + getImmediate8Signed(registers, memory);
     return meta.cycles[0];
   }
 
@@ -37,7 +40,7 @@ const jumpIfConditionMet = (
   if (registers.getFlag(condition) === conditionValue) {
     // Cast from unsigned integer to signed. No idea if this works. :)
     // We may need to offset by the meta.size.
-    registers.PC = getImmediate16Signed(registers, memory) - meta.size;
+    registers.PC = getImmediate16(registers, memory) - meta.size;
     return meta.cycles[0];
   }
 
