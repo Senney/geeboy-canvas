@@ -59,7 +59,7 @@ const swapHLBits: InstructionFunction = (registers, memory) => {
 
 const rotateRightInternal = (registers: RegisterSet, value: number): number => {
   const lsb = value & 0b1;
-  const msb = lsb << 7;
+  const msb = registers.flags.carry << 7;
   const rotated = (value >> 1) | msb;
 
   registers.setFlags({
