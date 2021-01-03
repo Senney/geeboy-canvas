@@ -97,11 +97,13 @@ export class CPU {
   }
 
   public enableInterrupts(): boolean {
+    console.log('Disable interrupts');
     this.interruptsEnabled = true;
     return true;
   }
 
   public disableInterrupts(): boolean {
+    console.log('Enabled interrupts');
     this.interruptsEnabled = false;
     return false;
   }

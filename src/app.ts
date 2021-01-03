@@ -22,7 +22,7 @@ const main = async () => {
 
   const fileUploadElement = document.getElementById('rom');
 
-  const canvas = new Canvas(canvasElement as HTMLCanvasElement, 160, 144);
+  const canvas = new Canvas(canvasElement as HTMLCanvasElement);
   const loader = new RomLoader(fileUploadElement as HTMLInputElement);
 
   canvas.context.fillText('Waiting for a ROM...', 50, 50);
@@ -38,6 +38,14 @@ const main = async () => {
   const cpu = new CPU(cart, ram);
   const interruptManager = new InterruptManager(cpu, ram);
   const gpu = new GPU(canvas, ram, interruptManager);
+  cpu.instrumentation = false;
+
+  for (let i = 0; i < 50; i++) {
+    for (let j = 0; j < 50; j++) {
+      canvas.setPixel(i, j, { r: 1, g: 1, b: 1 });
+    }
+  }
+  canvas.swap();
 
   ram.write(0xff44, 0x91);
 
@@ -62,13 +70,26 @@ const main = async () => {
   dumpRegistersToTable(cpu.registers);
   dumpSurroundingProgram(cpu.registers, ram);
   document.getElementById('step').onclick = () => {
-    cpu.step();
-    dumpInstructionHistory(cpu);
-    dumpRegistersToTable(cpu.registers);
-    dumpSurroundingProgram(cpu.registers, ram);
+    // cpu.step();
+    // dumpInstructionHistory(cpu);
+    // dumpRegistersToTable(cpu.registers);
+    // dumpSurroundingProgram(cpu.registers, ram);
+
+    for (let i = 0; i < 50; i++) {
+      for (let j = 0; j < 50; j++) {
+        canvas.setPixel(i, j, {
+          r: Math.random() * 255,
+          g: Math.random() * 255,
+          b: 1,
+        });
+      }
+    }
+    canvas.swap();
   };
   document.getElementById('step-10').onclick = () => {
+    document.getElementById('step-10').setAttribute('disabled', '1');
     runFrame();
+    document.getElementById('step-10').removeAttribute('disabled');
     dumpInstructionHistory(cpu);
     dumpRegistersToTable(cpu.registers);
     dumpSurroundingProgram(cpu.registers, ram);
@@ -90,11 +111,9 @@ const main = async () => {
   };
   document.getElementById('run-to-pc').onclick = () => {
     const pcValue = (document.getElementById('pc') as HTMLInputElement).value;
-    let i = 0;
     while (cpu.registers.PC !== parseInt(pcValue)) {
       try {
         cpu.step();
-        i++;
       } catch (e) {
         break;
       }
@@ -103,6 +122,47 @@ const main = async () => {
     dumpInstructionHistory(cpu);
     dumpRegistersToTable(cpu.registers);
     dumpSurroundingProgram(cpu.registers, ram);
+  };
+  document.getElementById('dump-oam').onclick = () => {
+    const sprites = [];
+    for (let i = 0; i < 40 * 4; i += 4) {
+      const ypos = ram.read(0xfe00 + i);
+      const xpos = ram.read(0xfe00 + i + 1);
+      const tile = ram.read(0xfe00 + i + 2);
+      const flags = ram.read(0xfe00 + i + 3);
+
+      if ((ypos | xpos | tile | flags) === 0) {
+        continue;
+      }
+
+      sprites.push(
+        `Sprite ${tile} at (${xpos}, ${ypos}) [${flags.toString(2)}]`
+      );
+    }
+
+    alert(sprites.join('\n'));
+  };
+  document.getElementById('dump-tile').onclick = () => {
+    const strings = [];
+    const base = prompt('Base', '0x8000');
+    const baseNum = parseInt(base);
+    for (let i = 0; i < 8; i++) {
+      const str = ram.read(baseNum + i).toString(2);
+      strings.push('00000000'.substr(str.length) + str);
+    }
+    alert(strings.join('\n'));
+  };
+  document.getElementById('dump-background').onclick = () => {
+    const strings = [];
+    for (let i = 0; i < 32; i++) {
+      const row = [];
+      for (let j = 0; j < 32; j++) {
+        row.push(ram.read(0x9800 + (i * 32 + j)).toString(16));
+      }
+      strings.push(row.join(' '));
+    }
+
+    alert(strings.join('\n'));
   };
 };
 
