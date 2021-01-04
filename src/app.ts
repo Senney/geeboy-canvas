@@ -69,21 +69,29 @@ const main = async () => {
   dumpRegistersToTable(cpu.registers);
   dumpSurroundingProgram(cpu.registers, ram);
   document.getElementById('step').onclick = () => {
-    // cpu.step();
-    // dumpInstructionHistory(cpu);
-    // dumpRegistersToTable(cpu.registers);
-    // dumpSurroundingProgram(cpu.registers, ram);
+    cpu.step();
+    dumpInstructionHistory(cpu);
+    dumpRegistersToTable(cpu.registers);
+    dumpSurroundingProgram(cpu.registers, ram);
 
-    for (let i = 0; i < 50; i++) {
-      for (let j = 0; j < 50; j++) {
-        canvas.setPixel(i, j, {
-          r: Math.random() * 255,
-          g: Math.random() * 255,
-          b: 1,
-        });
-      }
+    // for (let i = 0; i < 50; i++) {
+    //   for (let j = 0; j < 50; j++) {
+    //     canvas.setPixel(i, j, {
+    //       r: Math.random() * 255,
+    //       g: Math.random() * 255,
+    //       b: 1,
+    //     });
+    //   }
+    // }
+    // canvas.swap();
+  };
+  document.getElementById('step-out').onclick = () => {
+    while (!cpu.instrHistory[cpu.instrHistory.length - 1].includes('RET')) {
+      cpu.step();
     }
-    canvas.swap();
+    dumpInstructionHistory(cpu);
+    dumpRegistersToTable(cpu.registers);
+    dumpSurroundingProgram(cpu.registers, ram);
   };
   document.getElementById('step-10').onclick = () => {
     document.getElementById('step-10').setAttribute('disabled', '1');
@@ -110,7 +118,12 @@ const main = async () => {
   };
   document.getElementById('run-to-pc').onclick = () => {
     const pcValue = (document.getElementById('pc') as HTMLInputElement).value;
-    while (cpu.registers.PC !== parseInt(pcValue)) {
+    const t = parseInt(pcValue);
+    if (cpu.registers.PC === t) {
+      cpu.step();
+    }
+
+    while (cpu.registers.PC !== t) {
       try {
         cpu.step();
       } catch (e) {
