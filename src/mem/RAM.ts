@@ -5,6 +5,9 @@ export interface RAM {
   write(addr: number, value: number): void;
   writeLCDCInternal(value: number): void;
 
+  lock(addr: number): void;
+  unlock(addr: number): void;
+
   dma(): Uint8Array;
 }
 
@@ -34,6 +37,7 @@ const specialMemoryRegisters = {
 
 export class RAMBase implements RAM {
   protected memory: Uint8Array;
+  protected lockedAddresses: Set<number>;
 
   constructor(protected rom: Cartridge) {
     this.memory = Uint8Array.from({ length: 0xffff + 1 }).fill(
@@ -41,6 +45,7 @@ export class RAMBase implements RAM {
       0,
       0xffff + 1
     );
+    this.lockedAddresses = new Set();
   }
 
   read(addr: number): number {
@@ -56,6 +61,10 @@ export class RAMBase implements RAM {
   }
 
   write(addr: number, value: number): void {
+    if (this.lockedAddresses.has(addr)) {
+      return;
+    }
+
     if (specialMemoryRegisters[addr]) {
       console.log('writing', specialMemoryRegisters[addr], value.toString(2));
     }
@@ -85,6 +94,14 @@ export class RAMBase implements RAM {
 
   writeLCDCInternal(value: number): void {
     this.memory[0xff41] = value;
+  }
+
+  lock(addr: number): void {
+    this.lockedAddresses.add(addr);
+  }
+
+  unlock(addr: number): void {
+    this.lockedAddresses.delete(addr);
   }
 
   private handleDMATransfer(value: number) {

@@ -99,12 +99,14 @@ export class CPU {
   public enableInterrupts(): boolean {
     console.log('Disable interrupts');
     this.interruptsEnabled = true;
+    this.mem.unlock(0xff0f);
     return true;
   }
 
   public disableInterrupts(): boolean {
     console.log('Enabled interrupts');
     this.interruptsEnabled = false;
+    this.mem.lock(0xff0f);
     return false;
   }
 
