@@ -38,7 +38,6 @@ const main = async () => {
   const cpu = new CPU(cart, ram);
   const interruptManager = new InterruptManager(cpu, ram);
   const gpu = new GPU(canvas, ram, interruptManager);
-  cpu.instrumentation = false;
 
   for (let i = 0; i < 50; i++) {
     for (let j = 0; j < 50; j++) {
