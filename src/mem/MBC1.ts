@@ -105,8 +105,8 @@ export class MBC1 extends RAMBase {
   }
 
   private selectRomBank(bank: number) {
-    if ([0x0, 0x20, 0x40, 0x60].includes(bank)) {
-      bank += 1;
+    if (bank === 0) {
+      bank = 1;
     }
 
     this.romBank = bank;

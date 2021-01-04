@@ -30,6 +30,11 @@ export class Canvas {
     this.currentBuffer = (this.currentBuffer + 1) % this.buffers.length;
   }
 
+  public clear(): void {
+    this.buffers[this.currentBuffer] = this.ctx.createImageData(256, 256);
+    this.ctx.putImageData(this.frameBuffer, 0, 0, 0, 0, 160, 144);
+  }
+
   public setPixel(x: number, y: number, color: Color): void {
     const base = x * 4 + y * 4 * 256;
     this.frameBuffer.data[base] = color.r;

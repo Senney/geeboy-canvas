@@ -103,6 +103,35 @@ export class GPU {
     }
   }
 
+  public dumpSpriteTable(): ImageData {
+    const base = this.bgWindowTileDataSource;
+    const dst = this.canvas.context.createImageData(256, 96);
+    const mem = this.memory.dma();
+
+    for (let i = 0; i < 384; i++) {
+      const row = Math.floor(i / 32);
+      const col = i - row * 32;
+
+      const tileAddr = this.getTileDataAddr(base, i);
+      for (let j = 0; j < 16; j += 2) {
+        const y = row * 8 + Math.floor(j / 2);
+        const d1 = mem[tileAddr + j];
+        const d2 = mem[tileAddr + j + 2];
+        for (let k = 0; k < 7; k++) {
+          const pixel = this.getPixel(d1, d2, k);
+          const x = col * 8 + (7 - k);
+          const base = x * 4 + y * 4 * 256;
+          dst.data[base] = palette[pixel].r;
+          dst.data[base + 1] = palette[pixel].g;
+          dst.data[base + 2] = palette[pixel].b;
+          dst.data[base + 3] = 255;
+        }
+      }
+    }
+
+    return dst;
+  }
+
   private renderBackground(scanline: number): void {
     const baseAddr = this.backgroundDisplayMemoryBase;
     const row = Math.floor(scanline / 8);
@@ -141,15 +170,19 @@ export class GPU {
       const rowData2 = mem[tileAddr + 1];
 
       for (let j = 7; j >= 0; j--) {
-        const pixelValue =
-          ((rowData1 & (0b1 << j)) >> j) |
-          (((rowData2 & (0b1 << j)) >> j) << 1);
+        const pixelValue = this.getPixel(rowData1, rowData2, j);
 
         const x = (i - 1) * 8 + (7 - j);
         const y = scanline;
         this.canvas.setPixel(x, y, palette[pixelValue]);
       }
     }
+  }
+
+  private getPixel(rowData1: number, rowData2: number, j: number) {
+    return (
+      ((rowData1 & (0b1 << j)) >> j) | (((rowData2 & (0b1 << j)) >> j) << 1)
+    );
   }
 
   private get lcdc(): number {

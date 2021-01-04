@@ -143,14 +143,9 @@ const main = async () => {
     alert(sprites.join('\n'));
   };
   document.getElementById('dump-tile').onclick = () => {
-    const strings = [];
-    const base = prompt('Base', '0x8000');
-    const baseNum = parseInt(base);
-    for (let i = 0; i < 8; i++) {
-      const str = ram.read(baseNum + i).toString(2);
-      strings.push('00000000'.substr(str.length) + str);
-    }
-    alert(strings.join('\n'));
+    const data = gpu.dumpSpriteTable();
+    canvas.clear();
+    canvas.context.putImageData(data, 0, 0);
   };
   document.getElementById('dump-background').onclick = () => {
     const strings = [];
