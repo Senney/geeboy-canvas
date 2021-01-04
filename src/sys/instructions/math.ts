@@ -113,15 +113,26 @@ const decrementRegister = (register: RegisterNames): InstructionFunction => {
   };
 };
 
+const addWideRegisterToHL = (selector: (registers: RegisterSet) => number) => (
+  registers: RegisterSet
+): void => {
+  const v = selector(registers);
+  const carry = registers.HL + v > 0xffff;
+  const halfCarry = (registers.HL & 0xff) + (v & 0xff) > 0xff;
+  registers.HL = (registers.HL + v) & 0xffff;
+  registers.setFlags({
+    subtract: 0,
+    halfCarry: halfCarry ? 1 : 0,
+    carry: carry ? 1 : 0,
+  });
+};
 const instructionMap: InstructionMap = {
   0x03: (register) => {
     register.BC++;
   },
   0x04: incrementRegister('B'),
   0x05: decrementRegister('B'),
-  0x09: (registers) => {
-    registers.HL = registers.HL + registers.BC;
-  },
+  0x09: addWideRegisterToHL((r) => r.BC),
   0x0b: (register) => {
     register.BC--;
   },
@@ -135,9 +146,7 @@ const instructionMap: InstructionMap = {
   0x1b: (register) => {
     register.DE--;
   },
-  0x19: (registers) => {
-    registers.HL = registers.HL + registers.DE;
-  },
+  0x19: addWideRegisterToHL((r) => r.DE),
   0x1c: incrementRegister('E'),
   0x1d: decrementRegister('E'),
   0x23: (register) => {
@@ -145,9 +154,7 @@ const instructionMap: InstructionMap = {
   },
   0x24: incrementRegister('H'),
   0x25: decrementRegister('H'),
-  0x29: (registers) => {
-    registers.HL = registers.HL + registers.HL;
-  },
+  0x29: addWideRegisterToHL((r) => r.HL),
   0x2b: (register) => {
     register.HL--;
   },
