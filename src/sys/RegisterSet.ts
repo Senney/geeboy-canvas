@@ -170,11 +170,7 @@ export class RegisterSet {
   }
 
   set SP(v: number) {
-    if (v > 0xffff || v < 0) {
-      throw new Error('Stack pointer cannot be 0xFFFF < value < 0.');
-    }
-
-    this.sp = v;
+    this.sp = v & 0xffff;
   }
 
   get AF(): number {
