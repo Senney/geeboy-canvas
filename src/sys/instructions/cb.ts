@@ -1,6 +1,6 @@
 import { RegisterNames } from '../RegisterSet';
 import { InstructionFunction, InstructionMap } from './types';
-import { generateInstructionsSingleRegisterWithHL } from './util';
+import { generateInstructionsSingleRegisterWithHL, zeroFlag } from './util';
 
 const swapRegisterBits = (register: RegisterNames): InstructionFunction => {
   return (registers) => {
@@ -8,7 +8,7 @@ const swapRegisterBits = (register: RegisterNames): InstructionFunction => {
     const swapped = ((v & 0b00001111) << 4) | ((v & 0b11110000) << 4);
     registers.setRegister(register, swapped);
     registers.setFlags({
-      zero: swapped === 0 ? 1 : 0,
+      zero: zeroFlag(swapped),
       carry: 0,
       halfCarry: 0,
       subtract: 0,
@@ -22,7 +22,7 @@ const swapHLBits: InstructionFunction = (registers, memory) => {
   const swapped = ((v & 0b00001111) << 4) | ((v & 0b11110000) << 4);
   memory.write(addr, swapped);
   registers.setFlags({
-    zero: swapped === 0 ? 1 : 0,
+    zero: zeroFlag(swapped),
     carry: 0,
     halfCarry: 0,
     subtract: 0,

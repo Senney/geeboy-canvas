@@ -93,3 +93,7 @@ export const generateInstructionsWithHL = (
     [baseInstr++]: normalFn(dstReg, 'A'),
   };
 };
+
+export const zeroFlag = (value: number): number => {
+  return (value & 0xff) === 0 ? 1 : 0;
+};

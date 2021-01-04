@@ -1,6 +1,6 @@
 import { RegisterNames, RegisterSet } from '../RegisterSet';
 import { InstructionFunction, InstructionMap } from './types';
-import { getImmediate8, unsigned } from './util';
+import { getImmediate8, unsigned, zeroFlag } from './util';
 
 const subtractor = (
   registers: RegisterSet
@@ -11,7 +11,7 @@ const subtractor = (
       carry: r < 0 ? 1 : 0,
       halfCarry: (((r1 & 0xf) - (r2 & 0xf)) & 0x10) > 0 ? 1 : 0,
       subtract: 1,
-      zero: r === 0 ? 1 : 0,
+      zero: zeroFlag(r),
     });
 
     return unsigned(r);
@@ -24,7 +24,7 @@ const subtractCarry = (registers: RegisterSet) => (v1: number, v2: number) => {
     carry: r < 0 ? 1 : 0,
     halfCarry: (((v1 & 0xf) - (v2 & 0xf)) & 0x10) > 0 ? 1 : 0,
     subtract: 1,
-    zero: r === 0 ? 1 : 0,
+    zero: zeroFlag(r),
   });
 
   return unsigned(r);
@@ -33,7 +33,7 @@ const subtractCarry = (registers: RegisterSet) => (v1: number, v2: number) => {
 const adder = (registers: RegisterSet) => (v1: number, v2: number) => {
   const result = v1 + v2;
   registers.setFlags({
-    zero: result === 0 ? 1 : 0,
+    zero: zeroFlag(result),
     subtract: 0,
     halfCarry: (((v1 & 0xf) + (v2 & 0xf)) & 0x10) > 0 ? 1 : 0,
     carry: result > 0xff ? 1 : 0,
@@ -44,7 +44,7 @@ const adder = (registers: RegisterSet) => (v1: number, v2: number) => {
 const addCarry = (registers: RegisterSet) => (v1: number, v2: number) => {
   const result = v1 + v2 + registers.flags.carry;
   registers.setFlags({
-    zero: result === 0 ? 1 : 0,
+    zero: zeroFlag(result),
     subtract: 0,
     halfCarry: (((v1 & 0xf) + (v2 & 0xf)) & 0x10) > 0 ? 1 : 0,
     carry: result > 0xff ? 1 : 0,
@@ -92,7 +92,7 @@ const incrementRegister = (register: RegisterNames): InstructionFunction => {
     const res = (v + 1) & 0xff;
     registers.setRegister(register, res);
     registers.setFlags({
-      zero: res === 0 ? 1 : 0,
+      zero: zeroFlag(res),
       subtract: 0,
       halfCarry: hc ? 1 : 0,
     });
@@ -106,7 +106,7 @@ const decrementRegister = (register: RegisterNames): InstructionFunction => {
     const res = (v - 1) & 0xff;
     registers.setRegister(register, res);
     registers.setFlags({
-      zero: res === 0 ? 1 : 0,
+      zero: zeroFlag(res),
       subtract: 0,
       halfCarry: hc ? 1 : 0,
     });

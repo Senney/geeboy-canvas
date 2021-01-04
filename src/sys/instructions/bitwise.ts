@@ -1,6 +1,6 @@
 import { InstructionFunction, InstructionMap } from './types';
 import { RegisterNames, RegisterSet } from '../RegisterSet';
-import { getImmediate8 } from './util';
+import { getImmediate8, zeroFlag } from './util';
 
 type LogicFn = (registers: RegisterSet) => (op1: number, op2: number) => void;
 
@@ -8,7 +8,7 @@ const ander = (registers: RegisterSet) => (op1: number, op2: number) => {
   const res = op1 & op2;
   registers.A = res;
   registers.setFlags({
-    zero: res === 0 ? 1 : 0,
+    zero: zeroFlag(res),
     subtract: 0,
     halfCarry: 1,
     carry: 0,
@@ -19,7 +19,7 @@ const orer = (registers: RegisterSet) => (op1: number, op2: number) => {
   const res = op1 | op2;
   registers.A = res;
   registers.setFlags({
-    zero: res === 0 ? 1 : 0,
+    zero: zeroFlag(res),
     subtract: 0,
     halfCarry: 0,
     carry: 0,
@@ -30,7 +30,7 @@ const xorer = (registers: RegisterSet) => (op1: number, op2: number) => {
   const res = op1 ^ op2;
   registers.A = res;
   registers.setFlags({
-    zero: res === 0 ? 1 : 0,
+    zero: zeroFlag(res),
     subtract: 0,
     halfCarry: 0,
     carry: 0,
