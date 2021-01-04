@@ -1,6 +1,6 @@
 import { RegisterNames, RegisterSet } from '../RegisterSet';
 import { InstructionFunction, InstructionMap } from './types';
-import { getImmediate8, unsigned, zeroFlag } from './util';
+import { getImmediate8, getImmediate8Signed, unsigned, zeroFlag } from './util';
 
 const subtractor = (
   registers: RegisterSet
@@ -126,6 +126,20 @@ const addWideRegisterToHL = (selector: (registers: RegisterSet) => number) => (
     carry: carry ? 1 : 0,
   });
 };
+
+const addSPSignedImmediate8: InstructionFunction = (registers, memory) => {
+  const v = getImmediate8Signed(registers, memory);
+  const carry = registers.SP + v > 0xffff;
+  const halfCarry = (registers.SP & 0xff) + v > 0xff;
+  registers.SP = registers.SP + v;
+  registers.setFlags({
+    carry: carry ? 1 : 0,
+    halfCarry: halfCarry ? 1 : 0,
+    zero: 0,
+    subtract: 0,
+  });
+};
+
 const instructionMap: InstructionMap = {
   0x03: (register) => {
     register.BC++;
@@ -213,6 +227,7 @@ const instructionMap: InstructionMap = {
   0xce: fnRegisterImmediate8(addCarry, 'A'),
   0xd6: fnRegisterImmediate8(subtractor, 'A'),
   0xde: fnRegisterImmediate8(subtractCarry, 'A'),
+  0xe8: addSPSignedImmediate8,
 };
 
 export default instructionMap;
