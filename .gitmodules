@@ -1,0 +1,6 @@
+[submodule "gameboy-doctor"]
+	path = gameboy-doctor
+	url = git@github.com:robert/gameboy-doctor.git
+[submodule "gb-test-roms"]
+	path = gb-test-roms
+	url = git@github.com:retrio/gb-test-roms.git
