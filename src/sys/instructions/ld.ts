@@ -34,7 +34,7 @@ const loadRegisterImmediate8 = (
   register: RegisterNames
 ): InstructionFunction => {
   return (registers, ram) => {
-    registers.setRegister(register, ram.read(registers.PC + 1) & 0xff);
+    registers.setRegister(register, getImmediate8(registers, ram));
   };
 };
 
@@ -147,7 +147,16 @@ const loadHLFromSPPlusImmediate8Signed: InstructionFunction = (
   registers,
   memory
 ) => {
-  registers.HL = registers.SP + getImmediate8Signed(registers, memory);
+  const v = getImmediate8Signed(registers, memory);
+  const carry = (((registers.SP & 0xff) + (v & 0xff)) & 0x100) === 0x100;
+  const halfCarry = (((registers.SP & 0xf) + (v & 0xf)) & 0x10) === 0x10;
+  registers.HL = registers.SP + v;
+  registers.setFlags({
+    halfCarry: halfCarry ? 1 : 0,
+    carry: carry ? 1 : 0,
+    subtract: 0,
+    zero: 0,
+  });
 };
 
 const loadSPFromHL: InstructionFunction = (registers) => {

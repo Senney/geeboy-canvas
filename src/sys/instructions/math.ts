@@ -21,8 +21,8 @@ const subtractor = (
 const subtractCarry = (registers: RegisterSet) => (v1: number, v2: number) => {
   const r = v1 - v2 - registers.flags.carry;
   registers.setFlags({
-    carry: r < 0 ? 1 : 0,
-    halfCarry: (((v1 & 0xf) - (v2 & 0xf)) & 0x10) > 0 ? 1 : 0,
+    carry: v2 + registers.flags.carry > v1 ? 1 : 0,
+    halfCarry: (v1 & 0xf) - (v2 & 0xf) - registers.flags.carry > 0x0f ? 1 : 0,
     subtract: 1,
     zero: zeroFlag(r),
   });
@@ -35,18 +35,19 @@ const adder = (registers: RegisterSet) => (v1: number, v2: number) => {
   registers.setFlags({
     zero: zeroFlag(result),
     subtract: 0,
-    halfCarry: (((v1 & 0xf) + (v2 & 0xf)) & 0x10) > 0 ? 1 : 0,
+    halfCarry: (v1 & 0xf) + (v2 & 0xf) + registers.flags.carry > 0x0f ? 1 : 0,
     carry: result > 0xff ? 1 : 0,
   });
   return unsigned(result);
 };
 
 const addCarry = (registers: RegisterSet) => (v1: number, v2: number) => {
-  const result = v1 + v2 + registers.flags.carry;
+  const v2Total = v2 + registers.flags.carry;
+  const result = v1 + ((v2Total) & 0xff);
   registers.setFlags({
     zero: zeroFlag(result),
     subtract: 0,
-    halfCarry: (((v1 & 0xf) + (v2 & 0xf)) & 0x10) > 0 ? 1 : 0,
+    halfCarry: (((v1 & 0xf) + (v2Total & 0xf)) & 0x10) > 0 ? 1 : 0,
     carry: result > 0xff ? 1 : 0,
   });
   return unsigned(result);
@@ -107,7 +108,7 @@ const decrementRegister = (register: RegisterNames): InstructionFunction => {
     registers.setRegister(register, res);
     registers.setFlags({
       zero: zeroFlag(res),
-      subtract: 0,
+      subtract: 1,
       halfCarry: hc ? 1 : 0,
     });
   };
@@ -118,7 +119,7 @@ const addWideRegisterToHL = (selector: (registers: RegisterSet) => number) => (
 ): void => {
   const v = selector(registers);
   const carry = registers.HL + v > 0xffff;
-  const halfCarry = (registers.HL & 0xff) + (v & 0xff) > 0xff;
+  const halfCarry = (((registers.HL & 0x0fff) + (v & 0x0fff)) & 0x1000) === 0x1000;
   registers.HL = (registers.HL + v) & 0xffff;
   registers.setFlags({
     subtract: 0,
@@ -129,8 +130,8 @@ const addWideRegisterToHL = (selector: (registers: RegisterSet) => number) => (
 
 const addSPSignedImmediate8: InstructionFunction = (registers, memory) => {
   const v = getImmediate8Signed(registers, memory);
-  const carry = registers.SP + v > 0xffff;
-  const halfCarry = (registers.SP & 0xff) + v > 0xff;
+  const carry = (((registers.SP & 0xff) + (v & 0xff)) & 0x100) === 0x100;
+  const halfCarry = (((registers.SP & 0xf) + (v & 0xf)) & 0x10) === 0x10;
   registers.SP = registers.SP + v;
   registers.setFlags({
     carry: carry ? 1 : 0,
@@ -183,8 +184,14 @@ const instructionMap: InstructionMap = {
   0x35: (register, memory) => {
     memory.write(register.HL, memory.read(register.HL) - 1);
   },
-  0x39: (registers) => {
+  0x39: (registers) => {    
+    registers.setFlags({
+      subtract: 0,
+      halfCarry: (((registers.HL & 0x0fff) + (registers.SP & 0x0fff) & 0x1000) === 0x1000) ? 1 : 0,
+      carry: (((registers.HL & 0xffff) + (registers.SP & 0xffff) & 0x10000) === 0x10000) ? 1 : 0
+    });
     registers.HL = registers.HL + registers.SP;
+
   },
   0x3b: (register) => {
     register.SP--;

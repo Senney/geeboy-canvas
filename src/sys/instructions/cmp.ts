@@ -7,7 +7,7 @@ const compare = (registers: RegisterSet) => (op1: number, op2: number) => {
   registers.setFlags({
     zero: zeroFlag(v),
     subtract: 1,
-    halfCarry: ((op1 & 0xf) - (op2 & 0xf)) * 0x10 === 0 ? 1 : 0,
+    halfCarry: (((op1 & 0x0F) - (op2 & 0x0F)) & 0xF0) > 0 ? 1 : 0,
     carry: op1 < op2 ? 1 : 0,
   });
 };

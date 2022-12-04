@@ -99,7 +99,7 @@ const rotateRightInternal = (registers: RegisterSet, value: number): number => {
   const rotated = (value >> 1) | msb;
 
   registers.setFlags({
-    zero: zeroFlag(rotated),
+    zero: 0,
     subtract: 0,
     halfCarry: 0,
     carry: lsb,
@@ -115,6 +115,16 @@ const rotateRight = (register: RegisterNames): InstructionFunction => (
   registers.setRegister(register, rotated);
 };
 
+const rotateRightWithZero = (register: RegisterNames): InstructionFunction => (
+  registers
+) => {
+  const value = registers.getRegister(register);
+  const rotated = rotateRightInternal(registers, value);
+  registers.setRegister(register, rotated);
+  registers.setFlags({ zero: zeroFlag(rotated) })
+};
+
+
 const rotateRightMemory = (): InstructionFunction => (registers, memory) => {
   const v = memory.read(registers.HL);
   const rotated = rotateRightInternal(registers, v);
@@ -125,8 +135,9 @@ const rotateRightCarry = (register: RegisterNames): InstructionFunction => (
   registers
 ) => {
   const value = registers.getRegister(register);
+  const carry = registers.getFlag('carry');
   const lsb = value & 0b1;
-  const newValue = value | (lsb << 7);
+  const newValue = value | (carry << 7);
   registers.setRegister(register, newValue);
   registers.setFlags({
     zero: zeroFlag(newValue),
@@ -216,7 +227,7 @@ const instructionMap: InstructionMap = {
   ...generateInstructionsSingleRegisterWithHL(0xcb10, rl, rlMemory),
   ...generateInstructionsSingleRegisterWithHL(
     0xcb18,
-    rotateRight,
+    rotateRightWithZero,
     rotateRightMemory
   ),
   ...generateInstructionsSingleRegisterWithHL(
