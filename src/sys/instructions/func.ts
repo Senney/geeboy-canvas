@@ -3,7 +3,7 @@ import { InstructionMetadataRecord } from '../InstructionMetadata';
 import { Flags, RegisterNames, RegisterSet } from '../RegisterSet';
 import { pop16, pop16PC, push16 } from './stack';
 import { InstructionFunction, InstructionMap } from './types';
-import { getImmediate16 } from './util';
+import { getImmediate16, unsigned16 } from './util';
 
 const ret: InstructionFunction = (registers, memory, _, meta) => {
   const newPC = pop16PC(registers, memory);
@@ -35,7 +35,7 @@ function callInternal(
   targetAddr: number
 ) {
   const nextInstr = registers.PC + meta.size;
-  const addr = targetAddr - meta.size;
+  const addr = unsigned16(targetAddr - meta.size);
   push16(registers, memory, nextInstr);
   registers.PC = addr;
 }

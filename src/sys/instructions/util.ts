@@ -43,6 +43,14 @@ export const unsigned = (value: number): number => {
   return Uint8Array.from([value])[0];
 };
 
+export const signed16 = (value: number): number => {
+  return Int16Array.from([value])[0];
+};
+
+export const unsigned16 = (value: number): number => {
+  return Uint16Array.from([value])[0];
+}
+
 export const mergeInstructionSets = (
   sets: InstructionMap[]
 ): InstructionMap => {
@@ -97,3 +105,20 @@ export const generateInstructionsWithHL = (
 export const zeroFlag = (value: number): number => {
   return (value & 0xff) === 0 ? 1 : 0;
 };
+
+const carry = (opMask: number, resultMask: number): (op1: number, op2: number, operand?: 'SUB' | 'ADD') => number => {
+  return (op1: number, op2: number, operand: 'SUB' | 'ADD' = 'ADD'): number => {
+    const maskedOp1 = op1 & opMask;
+    const maskedOp2 = op2 & opMask;
+    const result = operand === 'ADD' 
+      ? ((maskedOp1 + maskedOp2) & resultMask) === resultMask 
+      : ((maskedOp1 - maskedOp2) & resultMask) === resultMask;
+
+    return result ? 1 : 0;
+  }
+}
+
+export const carryFlag8 = carry(0xff, 0x100);
+export const carryFlag16 = carry(0xffff, 0x10000);
+export const halfCarryFlag8 = carry(0xf, 0x10);
+export const halfCarryFlag16 = carry(0x0fff, 0x1000);

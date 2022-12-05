@@ -158,11 +158,7 @@ export class RegisterSet {
   }
 
   set PC(v: number) {
-    if (v > 0xffff || v < 0) {
-      throw new Error('Program counter cannot be 0xFFFF < value < 0.');
-    }
-
-    this.pc = v;
+    this.pc = unsigned16(v);
   }
 
   get SP(): number {

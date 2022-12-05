@@ -1,6 +1,6 @@
 import { RegisterNames, RegisterSet } from '../RegisterSet';
 import { InstructionFunction, InstructionMap } from './types';
-import { getImmediate8, getImmediate8Signed, unsigned, zeroFlag } from './util';
+import { carryFlag8, getImmediate8, getImmediate8Signed, halfCarryFlag8, unsigned, zeroFlag } from './util';
 
 const subtractor = (
   registers: RegisterSet
@@ -22,7 +22,7 @@ const subtractCarry = (registers: RegisterSet) => (v1: number, v2: number) => {
   const r = v1 - v2 - registers.flags.carry;
   registers.setFlags({
     carry: v2 + registers.flags.carry > v1 ? 1 : 0,
-    halfCarry: (v1 & 0xf) - (v2 & 0xf) - registers.flags.carry > 0x0f ? 1 : 0,
+    halfCarry: unsigned((v1 & 0xf) - (v2 & 0xf) - registers.flags.carry) > 0x0f ? 1 : 0,
     subtract: 1,
     zero: zeroFlag(r),
   });
@@ -35,22 +35,23 @@ const adder = (registers: RegisterSet) => (v1: number, v2: number) => {
   registers.setFlags({
     zero: zeroFlag(result),
     subtract: 0,
-    halfCarry: (v1 & 0xf) + (v2 & 0xf) + registers.flags.carry > 0x0f ? 1 : 0,
-    carry: result > 0xff ? 1 : 0,
+    halfCarry: halfCarryFlag8(v1, v2),
+    carry: carryFlag8(v1, v2),
   });
   return unsigned(result);
 };
 
 const addCarry = (registers: RegisterSet) => (v1: number, v2: number) => {
-  const v2Total = v2 + registers.flags.carry;
-  const result = v1 + ((v2Total) & 0xff);
+  const carry = registers.flags.carry;
+  const result = v1 + v2 + carry;
   registers.setFlags({
     zero: zeroFlag(result),
     subtract: 0,
-    halfCarry: (((v1 & 0xf) + (v2Total & 0xf)) & 0x10) > 0 ? 1 : 0,
+    // Special logic for add with carry
+    halfCarry: (v1 & 0xf) + (v2 & 0xf) + carry > 0xf ? 1 : 0,
     carry: result > 0xff ? 1 : 0,
   });
-  return unsigned(result);
+  return unsigned(result & 0xff);
 };
 
 const fnRegisterImmediate8 = (
@@ -179,10 +180,24 @@ const instructionMap: InstructionMap = {
     register.SP++;
   },
   0x34: (register, memory) => {
-    memory.write(register.HL, memory.read(register.HL) + 1);
+    const oldValue = memory.read(register.HL);
+    const newValue = oldValue + 1;
+    memory.write(register.HL, newValue);
+    register.setFlags({
+      zero: zeroFlag(newValue),
+      subtract: 0,
+      halfCarry: halfCarryFlag8(oldValue, 1, 'ADD')
+    })
   },
   0x35: (register, memory) => {
-    memory.write(register.HL, memory.read(register.HL) - 1);
+    const oldValue = memory.read(register.HL);
+    const newValue = oldValue - 1;
+    memory.write(register.HL, newValue);
+    register.setFlags({
+      zero: zeroFlag(newValue),
+      subtract: 1,
+      halfCarry: halfCarryFlag8(oldValue, 1, 'SUB')
+    })
   },
   0x39: (registers) => {    
     registers.setFlags({

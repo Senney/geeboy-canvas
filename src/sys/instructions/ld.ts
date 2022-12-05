@@ -1,6 +1,6 @@
 import { InstructionFunction, InstructionMap } from './types';
 import { RegisterNames, RegisterSet } from '../RegisterSet';
-import { getImmediate16, getImmediate8, getImmediate8Signed } from './util';
+import { carryFlag8, getImmediate16, getImmediate8, getImmediate8Signed, halfCarryFlag8 } from './util';
 
 const registerToRegisterLd = (
   dst: RegisterNames,
@@ -148,12 +148,12 @@ const loadHLFromSPPlusImmediate8Signed: InstructionFunction = (
   memory
 ) => {
   const v = getImmediate8Signed(registers, memory);
-  const carry = (((registers.SP & 0xff) + (v & 0xff)) & 0x100) === 0x100;
-  const halfCarry = (((registers.SP & 0xf) + (v & 0xf)) & 0x10) === 0x10;
+  const carry = carryFlag8(registers.SP, v);
+  const halfCarry = halfCarryFlag8(registers.SP, v);
   registers.HL = registers.SP + v;
   registers.setFlags({
-    halfCarry: halfCarry ? 1 : 0,
-    carry: carry ? 1 : 0,
+    halfCarry: halfCarry,
+    carry: carry,
     subtract: 0,
     zero: 0,
   });
