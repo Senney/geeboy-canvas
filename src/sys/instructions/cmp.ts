@@ -32,8 +32,8 @@ const instructionMap: InstructionMap = {
   0xba: compareAToRegister('D'),
   0xbb: compareAToRegister('E'),
   0xbc: compareAToRegister('H'),
-  0xbe: compareAToRegister('L'),
-  0xbd: compareAToHLMemory,
+  0xbd: compareAToRegister('L'), 
+  0xbe: compareAToHLMemory,
   0xbf: compareAToRegister('A'),
   0xfe: compareAImmediate8,
 };

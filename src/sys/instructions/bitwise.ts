@@ -161,11 +161,17 @@ const generateBitFunctions = (): InstructionMap => {
 
 const complement = (registers: RegisterSet): void => {
   registers.A = ~registers.A & 0xff;
+  registers.setFlags({
+    halfCarry: 1,
+    subtract: 1
+  });
 };
 
 const complementCarry = (registers: RegisterSet): void => {
   registers.setFlags({
     carry: ~registers.flags.zero & 0x1,
+    halfCarry: 0,
+    subtract: 0
   });
 };
 

@@ -34,7 +34,7 @@ const shiftLeft = (register: RegisterNames): InstructionFunction => (
   registers
 ) => {
   const v = registers.getRegister(register);
-  const msb = v & (0b1 << 7);
+  const msb = (v & (0b1 << 7)) >> 7;
   const newValue = v << 1;
 
   registers.setRegister(register, newValue);
@@ -48,7 +48,7 @@ const shiftLeft = (register: RegisterNames): InstructionFunction => (
 
 const shiftLeftMemory = (): InstructionFunction => (registers, memory) => {
   const v = memory.read(registers.HL);
-  const msb = v & (0b1 << 7);
+  const msb = (v & (0b1 << 7)) >> 7;
   const newValue = v << 1;
 
   memory.write(registers.HL, newValue);
@@ -131,13 +131,25 @@ const rotateRightMemory = (): InstructionFunction => (registers, memory) => {
   memory.write(registers.HL, rotated);
 };
 
+const rotateRightCarryA = (): InstructionFunction => (registers) => {
+  const value = registers.A;
+  const lsb = value & 0x1;
+  const newValue = (value >> 1) | (lsb << 7);
+  registers.A = newValue;
+  registers.setFlags({
+    zero:  0,
+    subtract: 0,
+    halfCarry: 0,
+    carry: lsb
+  });
+};
+
 const rotateRightCarry = (register: RegisterNames): InstructionFunction => (
   registers
 ) => {
   const value = registers.getRegister(register);
-  const carry = registers.getFlag('carry');
   const lsb = value & 0b1;
-  const newValue = value | (carry << 7);
+  const newValue = (value >> 1) | (lsb << 7);
   registers.setRegister(register, newValue);
   registers.setFlags({
     zero: zeroFlag(newValue),
@@ -163,12 +175,12 @@ const rotateRightCarryMemory = (): InstructionFunction => (
   });
 };
 
-const rlc = (register: RegisterNames): InstructionFunction => (registers) => {
+const rlc = (register: RegisterNames, setZero = true): InstructionFunction => (registers) => {
   const value = registers.getRegister(register);
   const msb = (value & (0x1 << 7)) >> 7;
   registers.setRegister(register, (value << 1) | msb);
   registers.setFlags({
-    zero: register === 'A' ? 0 : zeroFlag(value),
+    zero: setZero ? zeroFlag(value) : 0 ,
     subtract: 0,
     halfCarry: 0,
     carry: msb,
@@ -187,13 +199,13 @@ const rlcMemory = (): InstructionFunction => (registers, memory) => {
   });
 };
 
-const rl = (register: RegisterNames): InstructionFunction => (registers) => {
+const rl = (register: RegisterNames, setZero = true): InstructionFunction => (registers) => {
   const value = registers.getRegister(register);
   const msb = (value & (0x1 << 7)) >> 7;
   const newValue = (value << 1) | registers.flags.carry;
   registers.setRegister(register, newValue);
   registers.setFlags({
-    zero: register === 'A' ? 0 : zeroFlag(newValue),
+    zero: setZero ? zeroFlag(newValue) : 0, 
     subtract: 0,
     halfCarry: 0,
     carry: msb,
@@ -214,9 +226,9 @@ const rlMemory = (): InstructionFunction => (registers, memory) => {
 };
 
 const instructionMap: InstructionMap = {
-  0x07: rlc('A'),
-  0x0f: rotateRightCarry('A'),
-  0x17: rl('A'),
+  0x07: rlc('A', false),
+  0x0f: rotateRightCarryA(),
+  0x17: rl('A', false),
   0x1f: rotateRight('A'),
   ...generateInstructionsSingleRegisterWithHL(0xcb00, rlc, rlcMemory),
   ...generateInstructionsSingleRegisterWithHL(
