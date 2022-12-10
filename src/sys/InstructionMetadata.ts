@@ -43,7 +43,7 @@ export class InstructionMetadata {
     return {
       opcode: opcode,
       cycles: v.cycles,
-      name: this.toAssemblyStr(v),
+      name: ``,// this.toAssemblyStr(v),
       size: v.bytes,
     };
   }

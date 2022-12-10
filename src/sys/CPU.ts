@@ -19,7 +19,7 @@ export class CPU {
   public hasUnimplemented = false;
   public instrHistory = [];
   public nextInstruction: string;
-  public instrumentation = true;
+  public instrumentation = false;
 
   constructor(private rom: Cartridge, private mem: RAM) {
     this.r = new RegisterSet();
@@ -67,8 +67,15 @@ export class CPU {
       return meta.cycles[0];
     }
 
-    const cycles =
-      (func(this.r, this.mem, this, meta) as number) ?? meta.cycles[0];
+    let cycles: number;
+    try {
+      cycles = (func(this.r, this.mem, this, meta) as number) ?? meta.cycles[0];
+    } catch (error) {
+      console.log(error);
+      console.log(`Error at PC [${toHex(this.r.PC)}]`);
+
+      throw error;
+    }
 
     this.r.PC += meta.size;
 

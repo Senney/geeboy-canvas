@@ -17,14 +17,18 @@
     <div class="flex-container">
       <div>
         <canvas id="canvas"></canvas>
+        <p id="fps">fps: 0</p>
       </div>
       <div>
+        <button id="play">⏵</button>
         <button id="step">></button>
         <button id="step-10">> Frame</button>
         <button id="step-out">Step Out</button>
         <button id="run-to-unimplemented">>></button>
         <button id="run-to-pc">>>PC</button>
         <input type="text" id="pc" />
+        <button id="run-to-count">>>Count</button>
+        <input type="text" id="count" />
         <div>
           <span id="current-pc" style="font-weight: bold"></span>
           <span id="pc-bytes"></span>
@@ -33,6 +37,8 @@
           <button id="dump-oam">Dump OAM</button>
           <button id="dump-tile">Dump Tile</button>
           <button id="dump-background">Dump Background</button>
+          <button id="copy-logs">Copy Logs</button>
+          <button id="save-logs">Save Logs</button>
         </div>
         <div>
           <table>

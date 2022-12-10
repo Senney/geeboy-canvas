@@ -1,7 +1,7 @@
-import { combineRegisters, unsigned } from './instructions/util';
+import { combineRegisters, unsigned, unsigned16 } from './instructions/util';
 
-const DEFAULT_REGISTER_STATE = [0, 0, 0, 0, 0, 0, 0, 0];
-const DEFAULT_FLAG_STATE = [0, 0, 0, 0];
+const DEFAULT_REGISTER_STATE = [0x01, 0xB0, 0x00, 0x13, 0x00, 0xD8, 0x01, 0x4D];
+const DEFAULT_FLAG_STATE = [1, 0, 1, 1];
 const DEFAULT_PC = 0x100;
 const DEFAULT_SP = 0xfffe;
 

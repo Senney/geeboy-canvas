@@ -7,11 +7,14 @@ import {
   dumpInstructionHistory,
   dumpRegistersToTable,
   dumpSurroundingProgram,
+  formatCpuStateForLogging,
 } from './web';
 import { InterruptManager } from './sys/InterruptManager';
 import { GPU } from './gfx/GPU';
 
 const MILLISECONDS_PER_CYCLE = 1000 / 4_194_304;
+
+const logfile = [];
 
 const main = async () => {
   const canvasElement = document.getElementById('canvas');
@@ -39,6 +42,8 @@ const main = async () => {
   const interruptManager = new InterruptManager(cpu, ram);
   const gpu = new GPU(canvas, ram, interruptManager);
 
+  logfile.push(formatCpuStateForLogging(cpu.registers, ram));
+
   for (let i = 0; i < 50; i++) {
     for (let j = 0; j < 50; j++) {
       canvas.setPixel(i, j, { r: 1, g: 1, b: 1 });
@@ -48,11 +53,14 @@ const main = async () => {
 
   ram.write(0xff44, 0x91);
 
+  let playing = false;
+
   const runFrame = () => {
     let f = 0;
-    const start = performance.now();
+    // const start = performance.now();
     while (f < 70224) {
       const cycles = cpu.step();
+      // logfile.push(formatCpuStateForLogging(cpu.registers, ram));
       f += cycles;
       gpu.step(f);
 
@@ -63,7 +71,32 @@ const main = async () => {
       interruptManager.clearInterrupts();
     }
 
-    console.log('frame time: ', performance.now() - start);
+    // console.log('frame time: ', performance.now() - start);
+    // console.log('log length', logfile.length);
+  };
+
+  const fps = 60;
+  const startPlayLoop = async () => {
+    const desiredFrameTimeMs = 1000 / fps;
+    let count = 0;
+    const startTime = new Date().valueOf();
+
+    while (playing) {
+      const s = performance.now();
+      await new Promise<void>(resolve => setTimeout(() => {
+        runFrame();
+        resolve();
+      }, 1));
+      const waitTime = Math.max(0, desiredFrameTimeMs - (performance.now() - s));
+
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+
+      count += 1;
+
+      if (count % 10 === 0) {
+        document.getElementById('fps').textContent = 'fps: ' + Math.floor(count / ((new Date().valueOf() - startTime) / 1000)).toString();
+      }
+    }
   };
 
   dumpRegistersToTable(cpu.registers);
@@ -73,6 +106,8 @@ const main = async () => {
     dumpInstructionHistory(cpu);
     dumpRegistersToTable(cpu.registers);
     dumpSurroundingProgram(cpu.registers, ram);
+
+    logfile.push(formatCpuStateForLogging(cpu.registers, ram));
 
     // for (let i = 0; i < 50; i++) {
     //   for (let j = 0; j < 50; j++) {
@@ -85,9 +120,21 @@ const main = async () => {
     // }
     // canvas.swap();
   };
+  document.getElementById('play').onclick = () => {
+    if (playing) {
+      playing = false;
+      document.getElementById('play').textContent = '⏵';
+    } else {
+      playing = true;
+      document.getElementById('play').textContent = '⏸';
+
+      startPlayLoop();
+    }
+  };
   document.getElementById('step-out').onclick = () => {
     while (!cpu.instrHistory[cpu.instrHistory.length - 1].includes('RET')) {
       cpu.step();
+      logfile.push(formatCpuStateForLogging(cpu.registers, ram));
     }
     dumpInstructionHistory(cpu);
     dumpRegistersToTable(cpu.registers);
@@ -121,16 +168,35 @@ const main = async () => {
     const t = parseInt(pcValue);
     if (cpu.registers.PC === t) {
       cpu.step();
+      logfile.push(formatCpuStateForLogging(cpu.registers, ram));
     }
 
     while (cpu.registers.PC !== t) {
       try {
         cpu.step();
+        logfile.push(formatCpuStateForLogging(cpu.registers, ram));
       } catch (e) {
         break;
       }
     }
 
+    dumpInstructionHistory(cpu);
+    dumpRegistersToTable(cpu.registers);
+    dumpSurroundingProgram(cpu.registers, ram);
+  };
+  document.getElementById('run-to-count').onclick = () => {
+    const pcValue = (document.getElementById('count') as HTMLInputElement).value;
+    const t = parseInt(pcValue);
+
+    while (logfile.length !== t) {
+      try {
+        cpu.step();
+        logfile.push(formatCpuStateForLogging(cpu.registers, ram));
+      } catch (e) {
+        break;
+      }
+    }
+    
     dumpInstructionHistory(cpu);
     dumpRegistersToTable(cpu.registers);
     dumpSurroundingProgram(cpu.registers, ram);
@@ -170,6 +236,25 @@ const main = async () => {
     }
 
     alert(strings.join('\n'));
+  };
+  document.getElementById('copy-logs').onclick = () => {
+    const logs = logfile.join('\n');
+    navigator.clipboard.writeText(logs);
+  };
+  document.getElementById('save-logs').onclick = () => {
+    const logs = logfile.join('\n');
+    const file = new Blob([logs]);
+    
+    const a = document.createElement("a"),
+    url = URL.createObjectURL(file);
+    a.href = url;
+    a.toggleAttribute('download');
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function() {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);  
+    }, 0); 
   };
 };
 

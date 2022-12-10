@@ -49,13 +49,16 @@ export class RAMBase implements RAM {
   }
 
   read(addr: number): number {
-    if (specialMemoryRegisters[addr]) {
-      console.log(
-        'reading',
-        specialMemoryRegisters[addr],
-        this.memory[addr].toString(2)
-      );
-    }
+    // if (specialMemoryRegisters[addr]) {
+    //   console.log(
+    //     'reading',
+    //     specialMemoryRegisters[addr],
+    //     this.memory[addr].toString(2)
+    //   );
+    // }
+
+    // For Gameboy Doctor
+    // if (addr === 0xff44) return 0x90;
 
     return this.memory[addr];
   }

@@ -1,5 +1,4 @@
 import { RAM } from './mem/RAM';
-import { Cartridge } from './rom/Cartridge';
 import { CPU } from './sys/CPU';
 import { RegisterSet } from './sys/RegisterSet';
 
@@ -65,4 +64,20 @@ export const dumpInstructionHistory = (cpu: CPU): void => {
     e.textContent = instr;
     target.appendChild(e);
   }
+};
+
+export const formatCpuStateForLogging = (registers: RegisterSet, memory: RAM): string => {
+  const { A, B, C, D, E, F, H, L, SP, PC } = registers;
+
+  const pcMem = [
+    memory.read(PC),
+    memory.read(PC+1),
+    memory.read(PC+2),
+    memory.read(PC+3)
+  ];
+  
+  const f = (value: number, len = 2): string => value.toString(16).padStart(len, '0').toUpperCase();
+  const pcMemString = pcMem.map(v => f(v)).join(',');
+
+  return `A:${f(A)} F:${f(F)} B:${f(B)} C:${f(C)} D:${f(D)} E:${f(E)} H:${f(H)} L:${f(L)} SP:${f(SP, 4)} PC:${f(PC, 4)} PCMEM:${pcMemString}`;
 };
