@@ -19,7 +19,7 @@ const swapRegisterBits = (register: RegisterNames): InstructionFunction => {
 const swapHLBits: InstructionFunction = (registers, memory) => {
   const addr = registers.HL;
   const v = memory.read(addr);
-  const swapped = ((v & 0x00ff) << 8) | ((v & 0xff00) >> 8);
+  const swapped = ((v & 0x0f) << 4) | ((v & 0xf0) >> 4);
   memory.write(addr, swapped);
   registers.setFlags({
     zero: zeroFlag(swapped),

@@ -129,6 +129,7 @@ const rotateRightMemory = (): InstructionFunction => (registers, memory) => {
   const v = memory.read(registers.HL);
   const rotated = rotateRightInternal(registers, v);
   memory.write(registers.HL, rotated);
+  registers.setFlags({ zero: zeroFlag(rotated) })
 };
 
 const rotateRightCarryA = (): InstructionFunction => (registers) => {
@@ -165,7 +166,7 @@ const rotateRightCarryMemory = (): InstructionFunction => (
 ) => {
   const value = memory.read(registers.HL);
   const lsb = value & 0b1;
-  const newValue = value | (lsb << 7);
+  const newValue = (value >> 1) | (lsb << 7);
   memory.write(registers.HL, newValue);
   registers.setFlags({
     zero: zeroFlag(newValue),
@@ -218,7 +219,7 @@ const rlMemory = (): InstructionFunction => (registers, memory) => {
   const newValue = (value << 1) | registers.flags.carry;
   memory.write(registers.HL, newValue);
   registers.setFlags({
-    zero: zeroFlag(value),
+    zero: zeroFlag(newValue),
     subtract: 0,
     halfCarry: 0,
     carry: msb,

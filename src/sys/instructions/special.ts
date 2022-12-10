@@ -1,4 +1,3 @@
-import { RegisterSet } from '../RegisterSet';
 import { InstructionFunction, InstructionMap } from './types';
 
 const noop: InstructionFunction = () => {
@@ -13,7 +12,6 @@ const enableInterrupts: InstructionFunction = (_, __, cpu) => {
   cpu.enableInterrupts();
 };
 
-const i = 0;
 const daa: InstructionFunction = (registers) => {
   const flags = registers.flags;
   if (!flags.subtract) {
